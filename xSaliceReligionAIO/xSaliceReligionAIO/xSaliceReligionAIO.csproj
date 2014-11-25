@@ -58,6 +58,7 @@
     <Compile Include="Champions\Ahri.cs" />
     <Compile Include="Champions\Ezreal.cs" />
     <Compile Include="Champions\Irelia.cs" />
+    <Compile Include="Champions\Katarina.cs" />
     <Compile Include="Orbwalker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

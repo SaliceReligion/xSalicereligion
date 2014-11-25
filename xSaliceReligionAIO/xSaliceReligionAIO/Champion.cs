@@ -16,6 +16,7 @@ namespace xSaliceReligionAIO
             Drawing.OnDraw += Drawing_OnDraw;
             Interrupter.OnPossibleToInterrupt += Interrupter_OnPosibleToInterrupt;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
+            GameObject.OnCreate += GameObject_OnCreate;
         }
 
         public Champion(bool load)
@@ -39,6 +40,7 @@ namespace xSaliceReligionAIO
         public Spell E;
         public Spell R;
         public Spell _r2;
+        public SpellDataInst rSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.R);
 
         //summoners
         public SpellSlot IgniteSlot = ObjectManager.Player.GetSpellSlot("SummonerDot");
@@ -48,6 +50,8 @@ namespace xSaliceReligionAIO
         public Items.Item Botrk = new Items.Item(3153, 450);
         public Items.Item Bilge = new Items.Item(3144, 450);
         public Items.Item Hex = new Items.Item(3146, 700);
+        public int lastPlaced;
+        public Vector3 lastWardPos;
 
         //Mana Manager
         public int[] qMana = { 0, 0, 0, 0, 0, 0 };
@@ -320,6 +324,11 @@ namespace xSaliceReligionAIO
         }
 
         public virtual void Game_OnGameUpdate(EventArgs args)
+        {
+            //for champs to use
+        }
+
+        public virtual void GameObject_OnCreate(GameObject sender, EventArgs args)
         {
             //for champs to use
         }
