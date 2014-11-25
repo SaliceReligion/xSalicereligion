@@ -38,6 +38,7 @@ namespace xSaliceReligionAIO
         public Spell W;
         public Spell E;
         public Spell R;
+        public Spell _r2;
 
         //summoners
         public SpellSlot IgniteSlot = ObjectManager.Player.GetSpellSlot("SummonerDot");
@@ -233,6 +234,17 @@ namespace xSaliceReligionAIO
             });
         }
 
+        public void CastBasicSkillShot(Spell spell, float range, SimpleTs.DamageType type, HitChance hitChance)
+        {
+            var target = SimpleTs.GetTarget(range, type);
+
+            if (target == null || !spell.IsReady())
+                return;
+            spell.UpdateSourcePosition();
+
+            if (spell.GetPrediction(target).Hitchance >= hitChance)
+                spell.Cast(target, packets());
+        }
         public HitChance GetHitchance(string Source)
         {
             var hitC = HitChance.High;

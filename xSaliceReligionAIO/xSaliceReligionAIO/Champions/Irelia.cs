@@ -223,10 +223,10 @@ namespace xSaliceReligionAIO.Champions
         }
         public void Lasthit()
         {
-
             if (menu.Item("UseQLastHit").GetValue<bool>() && HasMana("Lasthit"))
                 Cast_Q_Last_Hit();
         }
+
         private void Farm()
         {
             if (!HasMana("LaneClear"))
