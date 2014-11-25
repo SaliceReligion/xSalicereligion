@@ -182,7 +182,7 @@ namespace xSaliceReligionAIO.Champions
             if (IgniteSlot != SpellSlot.Unknown && Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 comboDamage += Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
 
-            return (float)(comboDamage + Player.GetAutoAttackDamage(target) * 4);
+            return (float)(comboDamage + Player.GetAutoAttackDamage(target) * 1);
         }
 
         private void Combo()
