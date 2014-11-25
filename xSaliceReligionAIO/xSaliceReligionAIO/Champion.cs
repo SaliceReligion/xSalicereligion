@@ -87,7 +87,7 @@ namespace xSaliceReligionAIO
 
             //Packet Menu
             menu.AddSubMenu(new Menu("Packet Setting", "Packets"));
-            menu.SubMenu("Packets").AddItem(new MenuItem("packet", "Use Packets").SetValue(true));
+            menu.SubMenu("Packets").AddItem(new MenuItem("packet", "Use Packets").SetValue(false));
 
             menu.AddToMainMenu();
 
