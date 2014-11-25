@@ -390,8 +390,8 @@ namespace xSaliceReligionAIO.Champions
             {
                 if (R.IsKillable(target) && menu.Item("R_If_Killable").GetValue<bool>())
                     R.Cast(target, packets());
-                else if (getSimpleDmg(target) > target.Health)
-                    R.Cast(target, packets());
+                //else if (getSimpleDmg(target) > target.Health)
+                   // R.Cast(target, packets());
                 if (mode == 0)
                 {
                     if (menu.Item("R_Wait_For_Q").GetValue<bool>())
