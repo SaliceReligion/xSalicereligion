@@ -160,7 +160,7 @@ namespace xSaliceReligionAIO
         private static void OnUpdate(EventArgs args)
         {
             CheckAutoWindUp();
-            if (CurrentMode == Mode.None || MenuGUI.IsChatOpen || CustomOrbwalkMode)
+            if (CurrentMode == Mode.None || MenuGUI.IsChatOpen || CustomOrbwalkMode || MyHero.IsChannelingImportantSpell())
                 return;
             var target = GetPossibleTarget();
             Orbwalk(Game.CursorPos, target);
