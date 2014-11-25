@@ -237,7 +237,7 @@ namespace xSaliceReligionAIO.Champions
             if (eTarget != null && Ignite_Ready() && !E.IsReady() &&
                 Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready && source == "Combo")
             {
-                if (igniteMode == 0 && GetComboDamage(eTarget) > eTarget.Health)
+                if (igniteMode == 0 && dmg > eTarget.Health)
                 {
                     Use_Ignite(eTarget);
                 }
