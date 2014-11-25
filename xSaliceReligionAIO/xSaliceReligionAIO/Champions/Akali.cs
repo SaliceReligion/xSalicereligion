@@ -395,10 +395,16 @@ namespace xSaliceReligionAIO.Champions
                 if (mode == 0)
                 {
                     if (menu.Item("R_Wait_For_Q").GetValue<bool>())
+                    {
                         if (HasBuff(target, "AkaliMota"))
+                        {
                             R.Cast(target, packets());
+                        }
+                    }
                     else
+                    {
                         R.Cast(target, packets());
+                    }
                 }
                 else if (mode == 1)
                 {
