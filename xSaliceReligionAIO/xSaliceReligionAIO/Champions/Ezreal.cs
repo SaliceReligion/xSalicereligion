@@ -401,6 +401,9 @@ namespace xSaliceReligionAIO.Champions
 
         public override void Drawing_OnDraw(EventArgs args)
         {
+            if (menu.Item("Draw_Disabled").GetValue<bool>())
+                return;
+
             if (menu.Item("Draw_Q").GetValue<bool>())
                 if (Q.Level > 0)
                     Utility.DrawCircle(Player.Position, Q.Range, Q.IsReady() ? Color.Green : Color.Red);
