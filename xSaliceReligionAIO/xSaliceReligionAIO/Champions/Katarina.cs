@@ -567,8 +567,8 @@ namespace xSaliceReligionAIO.Champions
         {
             if (Player.IsChannelingImportantSpell())
             {
-                //LXOrbwalker.Orbwalk(target.ServerPosition, null);
-                Player.IssueOrder(GameObjectOrder.MoveTo, target.ServerPosition);
+                xSLxOrbwalker.Orbwalk(target.ServerPosition, null);
+                //Player.IssueOrder(GameObjectOrder.MoveTo, target.ServerPosition);
             }
         }
 
@@ -584,7 +584,7 @@ namespace xSaliceReligionAIO.Champions
                 {
                     var objAiHero = nearChamps.FirstOrDefault();
                     if (objAiHero != null)
-                        Player.IssueOrder(GameObjectOrder.MoveTo, objAiHero.ServerPosition);
+                        xSLxOrbwalker.Orbwalk(nearChamps.FirstOrDefault().ServerPosition, null);
                 }
                 //LXOrbwalker.Orbwalk(nearChamps.FirstOrDefault().ServerPosition, null);
             }
