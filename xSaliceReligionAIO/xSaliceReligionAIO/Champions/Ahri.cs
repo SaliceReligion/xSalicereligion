@@ -244,7 +244,7 @@ namespace xSaliceReligionAIO.Champions
             }
 
             //W
-            if (useW && eTarget != null && W.IsReady() && Player.Distance(eTarget) <= W.Range &&
+            if (useW && eTarget != null && W.IsReady() && Player.Distance(eTarget) <= W.Range - 100 &&
                 ShouldW(eTarget, source))
             {
                 W.Cast();

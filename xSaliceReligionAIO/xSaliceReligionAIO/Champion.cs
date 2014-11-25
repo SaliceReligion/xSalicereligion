@@ -216,7 +216,7 @@ namespace xSaliceReligionAIO
             int totalMana = qMana[Q.Level] + wMana[W.Level] + eMana[E.Level] + rMana[R.Level];
             var checkMana = menu.Item("mana").GetValue<bool>();
 
-            if (Player.Mana >= totalMana || checkMana)
+            if (Player.Mana >= totalMana || !checkMana)
                 return true;
 
             return false;
