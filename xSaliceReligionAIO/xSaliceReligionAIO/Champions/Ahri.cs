@@ -120,22 +120,22 @@ namespace xSaliceReligionAIO.Champions
                 };
 
             //Drawings menu:
-            var draw = new Menu("Drawings", "Drawings");
+            var drawing = new Menu("Drawings", "Drawings");
             {
-                draw.AddItem(
+                drawing.AddItem(
                         new MenuItem("QRange", "Q range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-                draw.AddItem(
+                drawing.AddItem(
                         new MenuItem("WRange", "W range").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
-                draw.AddItem(
+                drawing.AddItem(
                         new MenuItem("ERange", "E range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-                draw.AddItem(
+                drawing.AddItem(
                         new MenuItem("RRange", "R range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-                draw.AddItem(
+                drawing.AddItem(
                         new MenuItem("cursor", "Draw R Dash Range").SetValue(new Circle(false,Color.FromArgb(100, 255, 0, 255))));
-                draw.AddItem(
+                drawing.AddItem(
                         new MenuItem("Draw_Mode", "Draw E Mode").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-                draw.AddItem(dmgAfterComboItem);
-                menu.AddSubMenu(draw);
+                drawing.AddItem(dmgAfterComboItem);
+                menu.AddSubMenu(drawing);
             }
         }
         

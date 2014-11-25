@@ -66,7 +66,7 @@ namespace xSaliceReligionAIO.Champions
 
             var combo = new Menu("Combo", "Combo");
             {
-                combo.AddItem(new MenuItem("Combo_mode", "Combo Mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 0)));
+                combo.AddItem(new MenuItem("Combo_mode", "Combo Mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" })));
                 combo.AddItem(new MenuItem("Combo_Switch", "Switch mode Key").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
                 combo.AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
                 combo.AddItem(new MenuItem("UseWCombo", "Use W").SetValue(true));
@@ -179,6 +179,11 @@ namespace xSaliceReligionAIO.Champions
         private void UseSpells(bool useQ, bool useW, bool useE, bool useR, string source)
         {
             int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
+
+            if (source == "Harass")
+            {
+                
+            }
 
             switch (mode)
             {
@@ -412,7 +417,7 @@ namespace xSaliceReligionAIO.Champions
                     if (HasBuff(target, "AkaliMota") && Q.IsReady())
                     {
                         R.Cast(target, packets());
-                        menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 0));
+                        menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }));
                     }
                 }
                 else if (mode == 2)
@@ -425,29 +430,29 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        private int lasttick;
+        private int _lasttick;
 
         private void ModeSwitch()
         {
             int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
-            int lasttime = Environment.TickCount - lasttick;
+            int lasttime = Environment.TickCount - _lasttick;
 
             if (menu.Item("Combo_Switch").GetValue<KeyBind>().Active && lasttime > Game.Ping)
             {
                 if (mode == 0)
                 {
                     menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 1));
-                    lasttick = Environment.TickCount + 300;
+                    _lasttick = Environment.TickCount + 300;
                 }
                 else if (mode == 1)
                 {
                     menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 2));
-                    lasttick = Environment.TickCount + 300;
+                    _lasttick = Environment.TickCount + 300;
                 }
                 else
                 {
-                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 0));
-                    lasttick = Environment.TickCount + 300;
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }));
+                    _lasttick = Environment.TickCount + 300;
                 }
             }
         }
