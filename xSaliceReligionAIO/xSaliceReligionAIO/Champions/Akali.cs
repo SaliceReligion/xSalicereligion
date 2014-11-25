@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using LeagueSharp;
 using LeagueSharp.Common;
+using SharpDX;
+using Color = System.Drawing.Color;
 
 namespace xSaliceReligionAIO.Champions
 {
@@ -12,7 +14,8 @@ namespace xSaliceReligionAIO.Champions
     {
         public Akali()
         {
-            
+            SetSpells();
+            LoadMenu();
         }
 
         private void SetSpells()
@@ -28,11 +31,21 @@ namespace xSaliceReligionAIO.Champions
 
         private void LoadMenu()
         {
+            var key = new Menu("Key", "Key");
+            {
+                key.AddItem(new MenuItem("ComboActive", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
+                key.AddItem(new MenuItem("HarassActive", "Harass!").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("N".ToCharArray()[0],KeyBindType.Toggle)));
+                key.AddItem(new MenuItem("LaneClearActive", "Farm!").SetValue(new KeyBind("V".ToCharArray()[0],KeyBindType.Press)));
+                //add to menu
+                menu.AddSubMenu(key);
+            }
+
             var spellMenu = new Menu("SpellMenu", "SpellMenu");
             {
                 var wMenu = new Menu("WMenu", "WMenu");
                 {
-                    wMenu.AddItem(new MenuItem("useW_enemyCount", "Use W if x Enemys Arround")).SetValue(new Slider(1, 1, 5));
+                    wMenu.AddItem(new MenuItem("useW_enemyCount", "Use W if x Enemys Arround")).SetValue(new Slider(3, 1, 5));
                     wMenu.AddItem(new MenuItem("useW_Health", "Use W if health below").SetValue(new Slider(25)));
                     spellMenu.AddSubMenu(wMenu);
                 }
@@ -63,7 +76,7 @@ namespace xSaliceReligionAIO.Champions
                 combo.AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
                 combo.AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
                 combo.AddItem(new MenuItem("Ignite", "Use Ignite").SetValue(true));
-                combo.AddItem(new MenuItem("Botrk", "Use BOTRK/Bilge").SetValue(true));
+                combo.AddItem(new MenuItem("Bilge", "Use Bilge/Hextech").SetValue(true));
                 //add to menu
                 menu.AddSubMenu(combo);
             }
@@ -168,7 +181,68 @@ namespace xSaliceReligionAIO.Champions
 
         private void UseSpells(bool useQ, bool useW, bool useE, bool useR, string source)
         {
+            int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
 
+            switch (mode)
+            {
+                case 0:
+                    if (useQ)
+                        Cast_Q(true);
+                    if (useE)
+                        Cast_E(true);
+                    if (useW)
+                        Cast_W();
+                    if (useR)
+                        Cast_R(0);
+                    break;
+                case 1:
+                    if (useQ)
+                        Cast_Q(true, 1);
+                    if (useR)
+                        Cast_R(1);
+                    if (useE)
+                        Cast_E(true, 1);
+                    if (useW)
+                        Cast_W();
+                    break;
+                case 2:
+                    if (useQ)
+                        Cast_Q(true, 2);
+                    if (useR)
+                        Cast_R(2);
+                    if (useE)
+                        Cast_E(true, 2);
+                    if (useW)
+                        Cast_W();
+                    break;
+            }
+
+            var qTarget = SimpleTs.GetTarget(650, SimpleTs.DamageType.Physical);
+            if (qTarget != null)
+            {
+                if (GetComboDamage(qTarget) >= qTarget.Health && menu.Item("Ignite").GetValue<bool>() && Ignite_Ready())
+                    Use_Ignite(qTarget);
+
+                if (menu.Item("Bilge").GetValue<bool>())
+                {
+                    if (GetComboDamage(qTarget) >= qTarget.Health &&
+                        !qTarget.HasBuffOfType(BuffType.Slow))
+                        Use_Bilge(qTarget);
+
+                    if (GetComboDamage(qTarget) >= qTarget.Health &&
+                        !qTarget.HasBuffOfType(BuffType.Slow))
+                        Use_Hex(qTarget);
+                }
+            }
+
+        }
+
+        public void farm()
+        {
+            if (menu.Item("UseQFarm").GetValue<bool>())
+                Cast_Q(false);
+            if (menu.Item("UseEFarm").GetValue<bool>())
+                Cast_E(false);
         }
 
         private Obj_AI_Hero CheckMark(float range)
@@ -344,6 +418,91 @@ namespace xSaliceReligionAIO.Champions
                         R.Cast(target, packets());
                     }
                 }
+            }
+        }
+
+        private int lasttick;
+
+        private void ModeSwitch()
+        {
+            int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
+            int lasttime = Environment.TickCount - lasttick;
+
+            if (menu.Item("Combo_Switch").GetValue<KeyBind>().Active && lasttime > Game.Ping)
+            {
+                if (mode == 0)
+                {
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 1));
+                    lasttick = Environment.TickCount + 300;
+                }
+                else if (mode == 1)
+                {
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 2));
+                    lasttick = Environment.TickCount + 300;
+                }
+                else
+                {
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 0));
+                    lasttick = Environment.TickCount + 300;
+                }
+            }
+        }
+
+        public override void Game_OnGameUpdate(EventArgs args)
+        {
+            //check if player is dead
+            if (Player.IsDead) return;
+
+            ModeSwitch();
+
+            if (menu.Item("ComboActive").GetValue<KeyBind>().Active)
+            {
+                Combo();
+            }
+            else
+            {
+                if (menu.Item("LaneClearActive").GetValue<KeyBind>().Active)
+                    farm();
+
+                if (menu.Item("HarassActiveT").GetValue<KeyBind>().Active)
+                    Harass();
+
+                if (menu.Item("HarassActive").GetValue<KeyBind>().Active)
+                    Harass();
+            }
+        }
+
+        public override void Drawing_OnDraw(EventArgs args)
+        {
+            if (menu.Item("Draw_Disabled").GetValue<bool>())
+                return;
+
+            if (menu.Item("Draw_Q").GetValue<bool>())
+                if (Q.Level > 0)
+                    Utility.DrawCircle(Player.Position, Q.Range, Q.IsReady() ? Color.Green : Color.Red);
+
+            if (menu.Item("Draw_W").GetValue<bool>())
+                if (W.Level > 0)
+                    Utility.DrawCircle(Player.Position, W.Range - 2, W.IsReady() ? Color.Green : Color.Red);
+
+            if (menu.Item("Draw_E").GetValue<bool>())
+                if (E.Level > 0)
+                    Utility.DrawCircle(Player.Position, E.Range, E.IsReady() ? Color.Green : Color.Red);
+
+            if (menu.Item("Draw_R").GetValue<bool>())
+                if (R.Level > 0)
+                    Utility.DrawCircle(Player.Position, R.Range, R.IsReady() ? Color.Green : Color.Red);
+
+            if (menu.Item("Current_Mode").GetValue<bool>())
+            {
+                Vector2 wts = Drawing.WorldToScreen(Player.Position);
+                int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
+                if (mode == 0)
+                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Normal");
+                else if (mode == 1)
+                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Q-R-AA-Q-E");
+                else if (mode == 2)
+                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Q-Q-R-E-AA");
             }
         }
     }
