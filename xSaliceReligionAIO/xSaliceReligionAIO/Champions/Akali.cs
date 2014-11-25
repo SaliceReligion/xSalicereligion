@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using LeagueSharp;
 using LeagueSharp.Common;
 using SharpDX;
@@ -393,9 +390,8 @@ namespace xSaliceReligionAIO.Champions
             {
                 if (R.IsKillable(target) && menu.Item("R_If_Killable").GetValue<bool>())
                     R.Cast(target, packets());
-                //else if (getSimpleDmg(target) > target.Health)
-                    //R.Cast(target, packets());
-
+                else if (getSimpleDmg(target) > target.Health)
+                    R.Cast(target, packets());
                 if (mode == 0)
                 {
                     if (menu.Item("R_Wait_For_Q").GetValue<bool>())

@@ -35,7 +35,7 @@ namespace xSaliceReligionAIO.Champions
                 key.AddItem(new MenuItem("ComboActive", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
                 key.AddItem(new MenuItem("HarassActive", "Harass!").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
                 key.AddItem(new MenuItem("LaneClearActive", "Farm!").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
-                key.AddItem(new MenuItem("LastHit", "Last Hit!").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("LastHitKey", "Last Hit!").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
                 //add to menu
                 menu.AddSubMenu(key);
             }
@@ -461,7 +461,7 @@ namespace xSaliceReligionAIO.Champions
                 if (menu.Item("LaneClearActive").GetValue<KeyBind>().Active)
                     Farm();
 
-                if (menu.Item("LastHit").GetValue<KeyBind>().Active)
+                if (menu.Item("LastHitKey").GetValue<KeyBind>().Active)
                     Lasthit();
 
                 if (menu.Item("HarassActive").GetValue<KeyBind>().Active)
