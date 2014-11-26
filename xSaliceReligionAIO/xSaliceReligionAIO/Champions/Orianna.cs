@@ -136,7 +136,7 @@ namespace xSaliceReligionAIO.Champions
                     {
                         if (intiator.HeroName == hero.BaseSkinName)
                         {
-                            initator.AddItem(new MenuItem(intiator.spellName, intiator.spellName)).SetValue(false);
+                            initator.AddItem(new MenuItem(intiator.SpellName, intiator.SpellName)).SetValue(false);
                         }
                     }
                 }
@@ -751,7 +751,7 @@ namespace xSaliceReligionAIO.Champions
                 {
                     if (args.SData.Name == spell.SDataName)
                     {
-                        if (menu.Item(spell.spellName).GetValue<bool>())
+                        if (menu.Item(spell.SpellName).GetValue<bool>())
                         {
                             if (E.IsReady() && Player.Distance(unit) < E.Range)
                             {

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace xSaliceReligionAIO
 {
     class Initiator
     {
         public string HeroName { get; set; }
-        public string spellName { get; set; }
+        public string SpellName { get; set; }
         public string SDataName { get; set; }
 
         public static List<Initiator> InitatorList = new List<Initiator>();
@@ -20,7 +16,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Aatrox",
-                spellName = "Aatrox Q",
+                SpellName = "Aatrox Q",
                 SDataName = "AatroxQ"
             });
 
@@ -28,7 +24,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Alistar",
-                spellName = "Alistar W",
+                SpellName = "Alistar W",
                 SDataName = "Headbutt"
             });
 
@@ -36,7 +32,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Amumu",
-                spellName = "Amumu Q",
+                SpellName = "Amumu Q",
                 SDataName = "BandageToss"
             });
 
@@ -44,7 +40,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Elise",
-                spellName = "Elise Spider E",
+                SpellName = "Elise Spider E",
                 SDataName = "elisespideredescent"
             });
 
@@ -52,7 +48,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "FiddleSticks",
-                spellName = "FiddleSticks R",
+                SpellName = "FiddleSticks R",
                 SDataName = "Crowstorm"
             });
 
@@ -60,7 +56,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Fiora",
-                spellName = "Fiora Q",
+                SpellName = "Fiora Q",
                 SDataName = "FioraQ"
             });
 
@@ -68,7 +64,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Gragas",
-                spellName = "Gragas Q",
+                SpellName = "Gragas Q",
                 SDataName = "GragasE"
             });
 
@@ -76,7 +72,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Hecarim",
-                spellName = "Hecarim R",
+                SpellName = "Hecarim R",
                 SDataName = "HecarimUlt"
             });
 
@@ -84,7 +80,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Irelia",
-                spellName = "Irelia Q",
+                SpellName = "Irelia Q",
                 SDataName = "IreliaGatotsu"
             });
 
@@ -92,7 +88,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "JarvanIV",
-                spellName = "JarvanIV EQ",
+                SpellName = "JarvanIV EQ",
                 SDataName = "JarvanIVDragonStrike"
             });
 
@@ -100,7 +96,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "JarvanIV",
-                spellName = "JarvanIV R",
+                SpellName = "JarvanIV R",
                 SDataName = "JarvanIVCataclysm"
             });
 
@@ -108,7 +104,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Jax",
-                spellName = "Jax Q",
+                SpellName = "Jax Q",
                 SDataName = "JaxLeapStrike"
             });
 
@@ -116,7 +112,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Jayce",
-                spellName = "Jayce Q",
+                SpellName = "Jayce Q",
                 SDataName = "JayceToTheSkies"
             });
 
@@ -124,7 +120,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Kassadin",
-                spellName = "Kassadin Q",
+                SpellName = "Kassadin Q",
                 SDataName = "RiftWalk"
             });
 
@@ -132,7 +128,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Katarina",
-                spellName = "Katarina E",
+                SpellName = "Katarina E",
                 SDataName = "KatarinaE"
             });
 
@@ -140,7 +136,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Khazix",
-                spellName = "Khazix E",
+                SpellName = "Khazix E",
                 SDataName = "KhazixE"
             });
 
@@ -148,7 +144,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Khazix",
-                spellName = "Khazix E(Evo)",
+                SpellName = "Khazix E(Evo)",
                 SDataName = "khazixelong"
             });
 
@@ -156,7 +152,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Leblanc",
-                spellName = "Leblanc W",
+                SpellName = "Leblanc W",
                 SDataName = "LeblancSlide"
             });
 
@@ -164,7 +160,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "LeeSin",
-                spellName = "LeeSin 2nd Q",
+                SpellName = "LeeSin 2nd Q",
                 SDataName = "blindmonkqtwo"
             });
 
@@ -172,7 +168,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Leona",
-                spellName = "Leona E",
+                SpellName = "Leona E",
                 SDataName = "LeonaZenithBladeMissle"
             });
 
@@ -180,7 +176,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Lissandra",
-                spellName = "Lissandra E",
+                SpellName = "Lissandra E",
                 SDataName = "LissandraE"
             });
 
@@ -188,7 +184,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Malphite",
-                spellName = "Malphite R",
+                SpellName = "Malphite R",
                 SDataName = "UFSlash"
             });
 
@@ -196,7 +192,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Maokai",
-                spellName = "Maokai W",
+                SpellName = "Maokai W",
                 SDataName = "MaokaiUnstableGrowth"
             });
 
@@ -204,7 +200,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "MonkeyKing",
-                spellName = "MonkeyKing E",
+                SpellName = "MonkeyKing E",
                 SDataName = "MonkeyKingNimbus"
             });
 
@@ -212,7 +208,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "MonkeyKing",
-                spellName = "MonkeyKing R",
+                SpellName = "MonkeyKing R",
                 SDataName = "MonkeyKingSpinToWin"
             });
 
@@ -220,7 +216,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Nocturne",
-                spellName = "Nocturne R",
+                SpellName = "Nocturne R",
                 SDataName = "NocturneParanoia"
             });
 
@@ -228,7 +224,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Renekton",
-                spellName = "Renekton E",
+                SpellName = "Renekton E",
                 SDataName = "RenektonSliceAndDice"
             });
 
@@ -236,7 +232,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Rengar",
-                spellName = "Rengar R",
+                SpellName = "Rengar R",
                 SDataName = "RengarR"
             });
 
@@ -244,7 +240,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Rengar",
-                spellName = "Rengar R",
+                SpellName = "Rengar R",
                 SDataName = "RengarR"
             });
 
@@ -252,7 +248,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Sejuani",
-                spellName = "Sejuani Q",
+                SpellName = "Sejuani Q",
                 SDataName = "SejuaniArcticAssault"
             });
 
@@ -260,7 +256,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Shaco",
-                spellName = "Shaco Q",
+                SpellName = "Shaco Q",
                 SDataName = "Deceive"
             });
 
@@ -268,7 +264,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Shen",
-                spellName = "Shen E",
+                SpellName = "Shen E",
                 SDataName = "ShenShadowDash"
             });
 
@@ -276,7 +272,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Shyvana",
-                spellName = "Shyvana R",
+                SpellName = "Shyvana R",
                 SDataName = "ShyvanaTransformCast"
             });
 
@@ -284,7 +280,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Talon",
-                spellName = "Talon E",
+                SpellName = "Talon E",
                 SDataName = "TalonCutthroat"
             });
 
@@ -292,7 +288,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Thresh",
-                spellName = "Thresh Q",
+                SpellName = "Thresh Q",
                 SDataName = "threshqleap"
             });
 
@@ -300,7 +296,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Tristana",
-                spellName = "Tristana W",
+                SpellName = "Tristana W",
                 SDataName = "RocketJump"
             });
 
@@ -308,7 +304,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Tryndamere",
-                spellName = "Tryndamere E",
+                SpellName = "Tryndamere E",
                 SDataName = "slashCast"
             });
 
@@ -316,7 +312,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Twitch",
-                spellName = "Twitch Q",
+                SpellName = "Twitch Q",
                 SDataName = "HideInShadows"
             });
 
@@ -324,14 +320,14 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Vi",
-                spellName = "Vi Q",
+                SpellName = "Vi Q",
                 SDataName = "ViQ"
             });
 
             InitatorList.Add(new Initiator
             {
                 HeroName = "Vi",
-                spellName = "Vi R",
+                SpellName = "Vi R",
                 SDataName = "ViR"
             });
 
@@ -339,7 +335,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Volibear",
-                spellName = "Volibear Q",
+                SpellName = "Volibear Q",
                 SDataName = "VolibearQ"
             });
 
@@ -347,7 +343,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Xin Zhao",
-                spellName = "Xin Zhao E",
+                SpellName = "Xin Zhao E",
                 SDataName = "XenZhaoSweep"
             });
 
@@ -355,7 +351,7 @@ namespace xSaliceReligionAIO
             InitatorList.Add(new Initiator
             {
                 HeroName = "Zac",
-                spellName = "Zac E",
+                SpellName = "Zac E",
                 SDataName = "ZacE"
             });
 
