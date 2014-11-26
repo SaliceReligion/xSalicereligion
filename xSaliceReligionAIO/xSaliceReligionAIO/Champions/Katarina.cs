@@ -167,7 +167,6 @@ namespace xSaliceReligionAIO.Champions
 
         private void Combo(bool useQ, bool useW, bool useE, bool useR)
         {
-            var focusSelected = menu.Item("selected").GetValue<bool>();
             Obj_AI_Hero target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
 
             int mode = menu.Item("comboMode").GetValue<StringList>().SelectedIndex;
@@ -175,9 +174,9 @@ namespace xSaliceReligionAIO.Champions
 
             int eDis = menu.Item("eDis").GetValue<Slider>().Value;
 
-            if (SimpleTs.GetSelectedTarget() != null)
-                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < E.Range)
-                    target = SimpleTs.GetSelectedTarget();
+            var range = E.Range;
+            if (GetTargetFocus(range) != null)
+                target = GetTargetFocus(range);
 
             if (!target.HasBuffOfType(BuffType.Invulnerability) && target.IsValidTarget(E.Range))
             {

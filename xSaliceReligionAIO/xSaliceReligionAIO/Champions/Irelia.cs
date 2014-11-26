@@ -70,6 +70,7 @@ namespace xSaliceReligionAIO.Champions
 
             var combo = new Menu("Combo", "Combo");
             {
+                combo.AddItem(new MenuItem("selected", "Focus Selected Target").SetValue(true));
                 combo.AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
                 combo.AddItem(new MenuItem("UseWCombo", "Use W").SetValue(true));
                 combo.AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
@@ -256,6 +257,9 @@ namespace xSaliceReligionAIO.Champions
         {
             var target = SimpleTs.GetTarget(Q.Range * 2, SimpleTs.DamageType.Physical);
 
+            if (GetTargetFocus(Q.Range) != null)
+                target = GetTargetFocus(Q.Range);
+
             if (Q.IsReady() && target != null)
             {
                 if (Q.IsKillable(target))
@@ -358,6 +362,9 @@ namespace xSaliceReligionAIO.Champions
         {
             var target = SimpleTs.GetTarget(200, SimpleTs.DamageType.Physical);
 
+            if (GetTargetFocus(200) != null)
+                target = GetTargetFocus(200);
+
             if (target != null && W.IsReady())
             {
                 W.Cast(packets());
@@ -367,6 +374,9 @@ namespace xSaliceReligionAIO.Champions
         private void Cast_E()
         {
             var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+
+            if (GetTargetFocus(E.Range) != null)
+                target = GetTargetFocus(E.Range);
 
             if (target != null && E.IsReady())
             {
@@ -398,6 +408,10 @@ namespace xSaliceReligionAIO.Champions
         {
             var target = SimpleTs.GetTarget(Player.Spellbook.GetSpell(SpellSlot.R).ToggleState == 1 ? Q.Range : R.Range,
                 SimpleTs.DamageType.Physical);
+
+            var range = R.Range;
+            if (GetTargetFocus(range) != null)
+                target = GetTargetFocus(range);
 
             if (target != null && R.IsReady())
             {

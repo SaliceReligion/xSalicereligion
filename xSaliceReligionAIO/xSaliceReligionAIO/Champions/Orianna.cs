@@ -206,12 +206,11 @@ namespace xSaliceReligionAIO.Champions
 
         private void UseSpells(bool useQ, bool useW, bool useE, bool useR, String source)
         {
-            var focusSelected = menu.Item("selected").GetValue<bool>();
             var range = E.IsReady() ? E.Range : Q.Range;
             Obj_AI_Hero target = SimpleTs.GetTarget(range, SimpleTs.DamageType.Magical);
-            if (SimpleTs.GetSelectedTarget() != null)
-                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < range)
-                    target = SimpleTs.GetSelectedTarget();
+
+            if (GetTargetFocus(range) != null)
+                target = GetTargetFocus(range);
 
             if (useQ && Q.IsReady())
             {

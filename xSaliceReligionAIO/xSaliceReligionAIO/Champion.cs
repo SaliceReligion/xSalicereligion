@@ -327,6 +327,16 @@ namespace xSaliceReligionAIO
             if (spell.GetPrediction(target).Hitchance >= hitChance)
                 spell.Cast(target, packets());
         }
+        public Obj_AI_Hero GetTargetFocus(float range)
+        {
+            var focusSelected = menu.Item("selected").GetValue<bool>();
+
+            if (SimpleTs.GetSelectedTarget() != null)
+                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < range)
+                    return SimpleTs.GetSelectedTarget();
+
+            return null;
+        }
         public HitChance GetHitchance(string Source)
         {
             var hitC = HitChance.High;
