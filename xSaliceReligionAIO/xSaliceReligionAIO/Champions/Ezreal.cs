@@ -39,17 +39,11 @@ namespace xSaliceReligionAIO.Champions
             var key = new Menu("Key", "Key");
             {
                 key.AddItem(new MenuItem("ComboActive", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
-                key.AddItem(
-                    new MenuItem("HarassActive", "Harass!").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
-                key.AddItem(
-                    new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("N".ToCharArray()[0],
-                        KeyBindType.Toggle)));
-                key.AddItem(
-                    new MenuItem("LaneClearActive", "Farm!").SetValue(new KeyBind("V".ToCharArray()[0],
-                        KeyBindType.Press)));
-                key.AddItem(
-                    new MenuItem("R_Nearest_Killable", "R Nearest Killable").SetValue(new KeyBind("R".ToCharArray()[0],
-                        KeyBindType.Press)));
+                key.AddItem(new MenuItem("HarassActive", "Harass!").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("N".ToCharArray()[0], KeyBindType.Toggle)));
+                key.AddItem(new MenuItem("LaneClearActive", "Farm!").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("R_Nearest_Killable", "R Nearest Killable").SetValue(new KeyBind("R".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("Force_R", "Force R Lowest").SetValue(new KeyBind("I".ToCharArray()[0], KeyBindType.Press)));
                 //add to menu
                 menu.AddSubMenu(key);
             }
@@ -359,6 +353,13 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
+        public void ForceR()
+        {
+            var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+            if (target != null && R.GetPrediction(target).Hitchance >= HitChance.High)
+                R.Cast(target, packets());
+        }
+
         public override void Game_OnGameUpdate(EventArgs args)
         {
             //check if player is dead
@@ -374,6 +375,9 @@ namespace xSaliceReligionAIO.Champions
 
             if (menu.Item("R_Nearest_Killable").GetValue<KeyBind>().Active)
                 Cast_R_Killable();
+
+            if(menu.Item("Force_R").GetValue<KeyBind>().Active)
+                ForceR();
 
             if (menu.Item("Misc_Use_WE").GetValue<KeyBind>().Active)
             {
