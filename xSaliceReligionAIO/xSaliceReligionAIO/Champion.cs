@@ -213,6 +213,7 @@ namespace xSaliceReligionAIO
                 ObjectManager.Get<Obj_AI_Hero>().Count(
                     hero => hero.IsAlly && !hero.IsDead && hero.IsValid && hero.Distance(pos) <= range);
         }
+
         public bool manaCheck()
         {
             int totalMana = qMana[Q.Level] + wMana[W.Level] + eMana[E.Level] + rMana[R.Level];
@@ -223,6 +224,7 @@ namespace xSaliceReligionAIO
 
             return false;
         }
+
         public PredictionOutput GetP(Vector3 pos, Spell spell, Obj_AI_Base target, float delay, bool aoe)
         {
             return Prediction.GetPrediction(new PredictionInput
@@ -239,6 +241,7 @@ namespace xSaliceReligionAIO
                 Aoe = aoe,
             });
         }
+
         public PredictionOutput GetP(Vector3 pos, Spell spell, Obj_AI_Base target, bool aoe)
         {
             return Prediction.GetPrediction(new PredictionInput
@@ -255,6 +258,7 @@ namespace xSaliceReligionAIO
                 Aoe = aoe,
             });
         }
+
         public PredictionOutput GetPCircle(Vector3 pos, Spell spell, Obj_AI_Base target, bool aoe)
         {
             return Prediction.GetPrediction(new PredictionInput
@@ -316,6 +320,7 @@ namespace xSaliceReligionAIO
             }
             return new object[3] { pointSegment, pointLine, isOnSegment };
         }
+
         public void CastBasicSkillShot(Spell spell, float range, SimpleTs.DamageType type, HitChance hitChance)
         {
             var target = SimpleTs.GetTarget(range, type);
@@ -327,16 +332,20 @@ namespace xSaliceReligionAIO
             if (spell.GetPrediction(target).Hitchance >= hitChance)
                 spell.Cast(target, packets());
         }
+
         public Obj_AI_Hero GetTargetFocus(float range)
         {
             var focusSelected = menu.Item("selected").GetValue<bool>();
 
             if (SimpleTs.GetSelectedTarget() != null)
                 if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < range)
+                {
+                    //Game.PrintChat("Focusing: " + SimpleTs.GetSelectedTarget().Name);
                     return SimpleTs.GetSelectedTarget();
-
+                }
             return null;
         }
+
         public HitChance GetHitchance(string Source)
         {
             var hitC = HitChance.High;

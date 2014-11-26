@@ -167,6 +167,7 @@ namespace xSaliceReligionAIO.Champions
                 drawing.AddItem(new MenuItem("RRange", "R range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
                 drawing.AddItem(new MenuItem("rModeDraw", "R mode").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
                 drawing.AddItem(dmgAfterComboItem);
+                menu.AddSubMenu(drawing);
             }
         }
 
