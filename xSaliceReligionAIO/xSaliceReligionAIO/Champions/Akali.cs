@@ -242,7 +242,7 @@ namespace xSaliceReligionAIO.Champions
 
         }
 
-        public void farm()
+        public void Farm()
         {
             if (menu.Item("UseQFarm").GetValue<bool>())
                 Cast_Q(false);
@@ -353,7 +353,7 @@ namespace xSaliceReligionAIO.Champions
                     if (HasBuff(target, "AkaliMota"))
                     {
                         E.Cast();
-                        menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }, 0));
+                        menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" }));
                     }
                     else if (E.IsKillable(target) && menu.Item("E_On_Killable").GetValue<bool>())
                         E.Cast();
@@ -363,13 +363,13 @@ namespace xSaliceReligionAIO.Champions
             {
                 if (MinionManager.GetMinions(Player.Position, E.Range).Count >= menu.Item("LaneClear_useE_minHit").GetValue<Slider>().Value)
                     E.Cast();
-                foreach (var minion in MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All,
-                    MinionTeam.Neutral, MinionOrderTypes.MaxHealth).Where(minion => Player.Distance(minion) <= E.Range))
-                    E.Cast();
+                foreach (var minion in MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All,MinionTeam.Neutral, MinionOrderTypes.MaxHealth).Where(minion => Player.Distance(minion) <= E.Range))
+                    if(E.GetDamage(minion) > minion.Health + 35)
+                        E.Cast();
             }
         }
 
-        private double getSimpleDmg(Obj_AI_Hero target)
+        private double GetSimpleDmg(Obj_AI_Hero target)
         {
             double dmg = 0;
 
@@ -398,7 +398,7 @@ namespace xSaliceReligionAIO.Champions
             {
                 if (R.IsKillable(target) && menu.Item("R_If_Killable").GetValue<bool>())
                     R.Cast(target, packets());
-                else if (getSimpleDmg(target) > target.Health && Player.Distance(target) > Q.Range - 50)
+                else if (GetSimpleDmg(target) > target.Health && Player.Distance(target) > Q.Range - 50)
                     R.Cast(target, packets());
 
                 if (countEnemiesNearPosition(target.ServerPosition, 500) >=
@@ -481,7 +481,7 @@ namespace xSaliceReligionAIO.Champions
                     Cast_Q(false);
 
                 if (menu.Item("LaneClearActive").GetValue<KeyBind>().Active)
-                    farm();
+                    Farm();
 
                 if (menu.Item("HarassActiveT").GetValue<KeyBind>().Active)
                     Harass();

@@ -17,6 +17,8 @@ namespace xSaliceReligionAIO
             Interrupter.OnPossibleToInterrupt += Interrupter_OnPosibleToInterrupt;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             GameObject.OnCreate += GameObject_OnCreate;
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            Game.OnGameSendPacket += Game_OnSendPacket;
         }
 
         public Champion(bool load)
@@ -237,7 +239,83 @@ namespace xSaliceReligionAIO
                 Aoe = aoe,
             });
         }
+        public PredictionOutput GetP(Vector3 pos, Spell spell, Obj_AI_Base target, bool aoe)
+        {
+            return Prediction.GetPrediction(new PredictionInput
+            {
+                Unit = target,
+                Delay = spell.Delay,
+                Radius = spell.Width,
+                Speed = spell.Speed,
+                From = pos,
+                Range = spell.Range,
+                Collision = spell.Collision,
+                Type = spell.Type,
+                RangeCheckFrom = Player.ServerPosition,
+                Aoe = aoe,
+            });
+        }
+        public PredictionOutput GetPCircle(Vector3 pos, Spell spell, Obj_AI_Base target, bool aoe)
+        {
+            return Prediction.GetPrediction(new PredictionInput
+            {
+                Unit = target,
+                Delay = spell.Delay,
+                Radius = 1,
+                Speed = float.MaxValue,
+                From = pos,
+                Range = float.MaxValue,
+                Collision = spell.Collision,
+                Type = spell.Type,
+                RangeCheckFrom = Player.ServerPosition,
+                Aoe = aoe,
+            });
+        }
 
+        public Object[] VectorPointProjectionOnLineSegment(Vector2 v1, Vector2 v2, Vector2 v3)
+        {
+            float cx = v3.X;
+            float cy = v3.Y;
+            float ax = v1.X;
+            float ay = v1.Y;
+            float bx = v2.X;
+            float by = v2.Y;
+            float rL = ((cx - ax) * (bx - ax) + (cy - ay) * (by - ay)) /
+                       ((float)Math.Pow(bx - ax, 2) + (float)Math.Pow(by - ay, 2));
+            var pointLine = new Vector2(ax + rL * (bx - ax), ay + rL * (by - ay));
+            float rS;
+            if (rL < 0)
+            {
+                rS = 0;
+            }
+            else if (rL > 1)
+            {
+                rS = 1;
+            }
+            else
+            {
+                rS = rL;
+            }
+            bool isOnSegment;
+            if (rS.CompareTo(rL) == 0)
+            {
+                isOnSegment = true;
+            }
+            else
+            {
+                isOnSegment = false;
+            }
+            var pointSegment = new Vector2();
+            if (isOnSegment)
+            {
+                pointSegment = pointLine;
+            }
+            else
+            {
+                pointSegment = new Vector2(ax + rS * (bx - ax), ay + rS * (by - ay));
+            }
+            return new object[3] { pointSegment, pointLine, isOnSegment };
+        }
         public void CastBasicSkillShot(Spell spell, float range, SimpleTs.DamageType type, HitChance hitChance)
         {
             var target = SimpleTs.GetTarget(range, type);
@@ -331,6 +409,16 @@ namespace xSaliceReligionAIO
         public virtual void GameObject_OnCreate(GameObject sender, EventArgs args)
         {
             //for champs to use
+        }
+
+        public virtual void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base unit, GameObjectProcessSpellCastEventArgs args)
+        {
+            //for champ use
+        }
+
+        public virtual void Game_OnSendPacket(GamePacketEventArgs args)
+        {
+            //for champ use
         }
     }
 }
