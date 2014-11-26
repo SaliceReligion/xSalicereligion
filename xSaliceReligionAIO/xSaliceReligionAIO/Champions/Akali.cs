@@ -58,6 +58,7 @@ namespace xSaliceReligionAIO.Champions
                 {
                     rMenu.AddItem(new MenuItem("R_Wait_For_Q", "Wait for Q Mark").SetValue(false));
                     rMenu.AddItem(new MenuItem("R_If_Killable", "R If Enemy Is killable").SetValue(true));
+                    rMenu.AddItem(new MenuItem("Dont_R_If", "Do not R if > enemy")).SetValue(new Slider(3, 1, 5));
                     spellMenu.AddSubMenu(rMenu);
                 }
                 //add to menu
@@ -81,6 +82,7 @@ namespace xSaliceReligionAIO.Champions
             {
                 harass.AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
                 harass.AddItem(new MenuItem("UseEHarass", "Use E").SetValue(true));
+                harass.AddItem(new MenuItem("UseQFarmH", "Use Q Last hit").SetValue(true));
                 //add to menu
                 menu.AddSubMenu(harass);
             }
@@ -180,11 +182,6 @@ namespace xSaliceReligionAIO.Champions
         {
             int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
 
-            if (source == "Harass")
-            {
-                
-            }
-
             switch (mode)
             {
                 case 0:
@@ -222,7 +219,7 @@ namespace xSaliceReligionAIO.Champions
             var qTarget = SimpleTs.GetTarget(650, SimpleTs.DamageType.Physical);
             if (qTarget != null)
             {
-                if (GetComboDamage(qTarget) >= qTarget.Health && menu.Item("Ignite").GetValue<bool>() && Ignite_Ready())
+                if (GetComboDamage(qTarget) >= qTarget.Health && menu.Item("Ignite").GetValue<bool>() && Ignite_Ready() && Player.Distance(qTarget) < 300)
                     Use_Ignite(qTarget);
 
                 if (menu.Item("Bilge").GetValue<bool>())
@@ -235,6 +232,12 @@ namespace xSaliceReligionAIO.Champions
                         !qTarget.HasBuffOfType(BuffType.Slow))
                         Use_Hex(qTarget);
                 }
+            }
+
+            if (source == "Harass")
+            {
+                if (menu.Item("UseQFarmH").GetValue<bool>() && Q.IsReady())
+                    Cast_Q(false);
             }
 
         }
@@ -397,6 +400,10 @@ namespace xSaliceReligionAIO.Champions
                     R.Cast(target, packets());
                 else if (getSimpleDmg(target) > target.Health && Player.Distance(target) > Q.Range - 50)
                     R.Cast(target, packets());
+
+                if (countEnemiesNearPosition(target.ServerPosition, 500) >=
+                    menu.Item("Dont_R_If").GetValue<Slider>().Value)
+                    return;
 
                 if (mode == 0)
                 {

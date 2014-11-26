@@ -205,7 +205,7 @@ namespace xSaliceReligionAIO.Champions
             if (useQ)
                 CastBasicSkillShot(Q, Q.Range, SimpleTs.DamageType.Physical, HitChance.High);
             if (useW)
-                CastBasicSkillShot(W, W.Range, SimpleTs.DamageType.Physical, HitChance.High);
+                CastBasicSkillShot(W, W.Range, SimpleTs.DamageType.Magical, HitChance.High);
             if (source == "Combo")
             {
                 var qTarget = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
