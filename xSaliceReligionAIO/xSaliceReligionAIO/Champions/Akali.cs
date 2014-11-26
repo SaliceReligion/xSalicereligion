@@ -34,6 +34,7 @@ namespace xSaliceReligionAIO.Champions
                 key.AddItem(new MenuItem("HarassActive", "Harass!").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
                 key.AddItem(new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("N".ToCharArray()[0],KeyBindType.Toggle)));
                 key.AddItem(new MenuItem("LaneClearActive", "Farm!").SetValue(new KeyBind("V".ToCharArray()[0],KeyBindType.Press)));
+                key.AddItem(new MenuItem("LastHitQ", "Last hit with Q!").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
                 //add to menu
                 menu.AddSubMenu(key);
             }
@@ -82,7 +83,6 @@ namespace xSaliceReligionAIO.Champions
             {
                 harass.AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
                 harass.AddItem(new MenuItem("UseEHarass", "Use E").SetValue(true));
-                harass.AddItem(new MenuItem("UseQFarmH", "Use Q Last hit").SetValue(true));
                 //add to menu
                 menu.AddSubMenu(harass);
             }
@@ -477,6 +477,9 @@ namespace xSaliceReligionAIO.Champions
             }
             else
             {
+                if (menu.Item("LastHitQ").GetValue<KeyBind>().Active)
+                    Cast_Q(false);
+
                 if (menu.Item("LaneClearActive").GetValue<KeyBind>().Active)
                     farm();
 
