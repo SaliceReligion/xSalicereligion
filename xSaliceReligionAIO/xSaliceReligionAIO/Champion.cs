@@ -338,7 +338,7 @@ namespace xSaliceReligionAIO
             var focusSelected = menu.Item("selected").GetValue<bool>();
 
             if (SimpleTs.GetSelectedTarget() != null)
-                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < range)
+                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < range && SimpleTs.GetSelectedTarget().Type == GameObjectType.obj_AI_Hero)
                 {
                     //Game.PrintChat("Focusing: " + SimpleTs.GetSelectedTarget().Name);
                     return SimpleTs.GetSelectedTarget();
