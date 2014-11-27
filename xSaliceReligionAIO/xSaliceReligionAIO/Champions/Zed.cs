@@ -158,7 +158,33 @@ namespace xSaliceReligionAIO.Champions
             if (IgniteSlot != SpellSlot.Unknown && Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 comboDamage += Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
 
-            return (float)(comboDamage + Player.GetAutoAttackDamage(target) * 1);
+            if ((target.Health / target.MaxHealth * 100) <= 50)
+                comboDamage += CalcPassive(target);
+
+            return (float)(comboDamage + Player.GetAutoAttackDamage(target) * 3);
+        }
+
+        public double CalcPassive(Obj_AI_Base target)
+        {
+            double dmg = 0;
+            
+            if (Player.Level > 16)
+            {
+                double hp = target.MaxHealth * .1;
+                dmg += Player.CalcDamage(target, Damage.DamageType.Magical, hp);
+            }
+            else if (Player.Level > 6)
+            {
+                double hp = target.MaxHealth * .08;
+                dmg += Player.CalcDamage(target, Damage.DamageType.Magical, hp);
+            }
+            else
+            {
+                double hp = target.MaxHealth * .06;
+                dmg += Player.CalcDamage(target, Damage.DamageType.Magical, hp);
+            }
+
+            return dmg;
         }
 
         private void Combo()
@@ -338,7 +364,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (RShadow != null)
             {
-                if (GetHealthPercent() < rHP && rSpell.ToggleState == 2 && countEnemiesNearPosition(RShadow.ServerPosition, 400) < 0)
+                if (GetHealthPercent() < rHP && rSpell.ToggleState == 2 && countEnemiesNearPosition(RShadow.ServerPosition, 400) < 1)
                 {
                     R.Cast(packets());
                     return;
@@ -347,7 +373,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (WShadow != null)
             {
-                if (GetHealthPercent() < wHP && wSpell.ToggleState == 2 && countEnemiesNearPosition(WShadow.ServerPosition, 400) < 0)
+                if (GetHealthPercent() < wHP && wSpell.ToggleState == 2 && countEnemiesNearPosition(WShadow.ServerPosition, 400) < 1)
                     W.Cast(packets());
             }
         }
