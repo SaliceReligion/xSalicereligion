@@ -57,7 +57,7 @@ namespace xSaliceReligionAIO.Champions
 
                 var wMenu = new Menu("WMenu", "WMenu");
                 {
-                    //wMenu.AddItem(new MenuItem("useW_enemyCount", "Use W if x Enemys Arround")).SetValue(new Slider(3, 1, 5));
+                    wMenu.AddItem(new MenuItem("W_Require_QE", "Require both Q/W to hit Harass")).SetValue(false);
                     //wMenu.AddItem(new MenuItem("useW_Health", "Use W if health below").SetValue(new Slider(25)));
                     spellMenu.AddSubMenu(wMenu);
                 }
@@ -204,7 +204,31 @@ namespace xSaliceReligionAIO.Champions
                     else
                         menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }));
                 break;
+                case 2:
+                    CoaxCombo(useQ, useE);
+                break;
 
+            }
+        }
+
+        public void CoaxCombo(bool useQ, bool useE)
+        {
+            var target = SimpleTs.GetTarget(W.Range, SimpleTs.DamageType.Physical);
+
+            if (target == null)
+                return;
+
+            if (W.IsReady())
+                Cast_W("Combo", useQ, useE);
+
+            if (WShadow != null && HasEnergy(Q.IsReady() && useQ, false, E.IsReady() && useE) && Q.IsReady() && E.IsReady())
+            {
+                if (wSpell.ToggleState == 2 && WShadow.Distance(target) < R.Range)
+                {
+                    W.Cast(packets());
+                    R.Cast(target, packets());
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }));
+                }
             }
         }
 
@@ -218,7 +242,7 @@ namespace xSaliceReligionAIO.Champions
             {
                 var pred = Prediction.GetPrediction(target, 250f);
 
-                if (Environment.TickCount - R.LastCastAttemptT > Game.Ping && rSpell.ToggleState == 0)
+                if (Environment.TickCount - R.LastCastAttemptT > Game.Ping && rSpell.ToggleState == 0 && W.IsReady())
                 {
                     R.Cast(target, packets());
                     R.LastCastAttemptT = Environment.TickCount + 300;
@@ -228,7 +252,7 @@ namespace xSaliceReligionAIO.Champions
                 if (HasBuff(target, "zedulttargetmark"))
                 {
                    
-                    if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
+                    if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - R.LastCastAttemptT > 0)
                     {
                         var BehindVector = Player.ServerPosition - Vector3.Normalize(target.ServerPosition - Player.ServerPosition) * W.Range;
                         if ((useE && pred.Hitchance >= HitChance.Medium) ||
@@ -415,6 +439,8 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
+        private Vector3 predWQ;
+        private bool willEHit;
         public void Cast_W(string source, bool useQ, bool useE)
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
@@ -424,18 +450,28 @@ namespace xSaliceReligionAIO.Champions
 
             if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
             {
-                if (Player.Distance(target) < W.Range)
+                if (Player.Distance(target) < W.Range + target.BoundingRadius)
                 {
                     var pred = Prediction.GetPrediction(target, 250f);
 
-                    if (Q.IsReady() && E.IsReady())
+                    if ((useQ ? Q.IsReady() : true) && (useE ? E.IsReady() : true))
                     {
-                        if ((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium))
+                        if ((pred.Hitchance >= HitChance.Medium && Q.GetPrediction(target).Hitchance >= HitChance.Medium))
                         {
                             W.Cast(pred.UnitPosition);
-                            W.LastCastAttemptT = Environment.TickCount + 100;
-                            Utility.DelayAction.Add(25, () => Q.Cast(pred.CastPosition, packets()));
-                            Utility.DelayAction.Add(50, () => E.Cast(packets()));
+                            W.LastCastAttemptT = Environment.TickCount + 300;
+
+                            if (useQ)
+                                predWQ = pred.CastPosition;
+                            else
+                                predWQ = Vector3.Zero;
+
+                            if (useE && pred.UnitPosition.Distance(target.ServerPosition) < E.Range + target.BoundingRadius)
+                                willEHit = true;
+                            else
+                                willEHit = false;
+
+                            Game.PrintChat("woooo");
                         }
                     }
                 }
@@ -448,16 +484,32 @@ namespace xSaliceReligionAIO.Champions
                     if (IsWall(vec.To2D()))
                         return;
 
-                    if (Q.IsReady() && E.IsReady())
+                    if ((useQ ? Q.IsReady() : true) && (useE ? E.IsReady() : true))
                     {
-                        if ((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) &&
-                            (predE.Hitchance >= HitChance.Medium && target.Distance(vec) < E.Range))
+                        if (menu.Item("W_Require_QE").GetValue<bool>() ? (pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium):
+                            (pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) && (predE.Hitchance >= HitChance.Medium))
                         {
-                            W.Cast(vec);
-                            W.LastCastAttemptT = Environment.TickCount + 100;
 
-                            Utility.DelayAction.Add(25, () => Q.Cast(pred.CastPosition, packets()));
-                            Utility.DelayAction.Add(50, () => E.Cast(packets()));
+                            if (useQ || (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius))
+                            {
+                                W.Cast(vec);
+                                W.LastCastAttemptT = Environment.TickCount + 300;
+                            }
+                            else if(!useQ && !useE)
+                            {
+                                W.Cast(vec);
+                                W.LastCastAttemptT = Environment.TickCount + 300;
+                            }
+
+                            if (useQ)
+                                predWQ = pred.CastPosition;
+                            else
+                                predWQ = Vector3.Zero;
+
+                            if (useE && vec.Distance(target.ServerPosition) < E.Range)
+                                willEHit = true;
+                            else
+                                willEHit = false;
                         }
                     }
                 }
@@ -544,7 +596,14 @@ namespace xSaliceReligionAIO.Champions
 
             if (args.SData.Name == "ZedShadowDash")
             {
-                //E.Cast(packets());
+                if (W.LastCastAttemptT - Environment.TickCount > 0)
+                {
+                    if (predWQ != Vector3.Zero)
+                        Q.Cast(predWQ, packets());
+
+                    if (willEHit)
+                        E.Cast(packets());
+                }
             }
             if (args.SData.Name == "zedw2")
             {
@@ -647,12 +706,12 @@ namespace xSaliceReligionAIO.Champions
 
             if (WShadow != null)
             {
-                Utility.DrawCircle(WShadow.Position, 200, Color.Aqua);
+                Utility.DrawCircle(WShadow.Position, E.Range, Color.Aqua);
             }
 
             if (RShadow != null)
             {
-                Utility.DrawCircle(RShadow.Position, 200, Color.Yellow);
+                Utility.DrawCircle(RShadow.Position, E.Range, Color.Yellow);
             }
 
             if (menu.Item("Current_Mode").GetValue<bool>())
