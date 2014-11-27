@@ -225,11 +225,11 @@ namespace xSaliceReligionAIO.Champions
 
             if (WShadow.Distance(target) > R.Range - 100)
             {
-                ;
+                Game.PrintChat("RAWRRR");
             }
             else
             {
-                if (useQ && (QCooldown - Game.Time) < qSpell.Cooldown / 5)
+                if (useQ && (QCooldown - Game.Time) > (qSpell.Cooldown / 4))
                     return;
                 if (useE && !E.IsReady())
                     return;
