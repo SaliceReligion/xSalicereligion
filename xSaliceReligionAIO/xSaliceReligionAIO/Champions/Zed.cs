@@ -82,7 +82,7 @@ namespace xSaliceReligionAIO.Champions
 
             var combo = new Menu("Combo", "Combo");
             {
-                combo.AddItem(new MenuItem("Combo_mode", "Combo Mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" })));
+                combo.AddItem(new MenuItem("Combo_mode", "Combo Mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" })));
                 combo.AddItem(new MenuItem("Combo_Switch", "Switch mode Key").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
                 combo.AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
                 combo.AddItem(new MenuItem("UseWCombo", "Use W").SetValue(true));
@@ -108,6 +108,12 @@ namespace xSaliceReligionAIO.Champions
                 farm.AddItem(new MenuItem("LaneClear_useE_minHit", "Use E if min. hit").SetValue(new Slider(2, 1, 6)));
                 //add to menu
                 menu.AddSubMenu(farm);
+            }
+            var misc = new Menu("Misc", "Misc");
+            {
+                misc.AddItem(new MenuItem("smartKS", "Use Smart KS System").SetValue(true));
+                //add to menu
+                menu.AddSubMenu(misc);
             }
             var drawMenu = new Menu("Drawing", "Drawing");
             {
@@ -173,21 +179,32 @@ namespace xSaliceReligionAIO.Champions
 
         private void Combo(bool useQ, bool useW, bool useE, bool useR)
         {
-            if(useR)
-                LineCombo(useQ, useE);
+            int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
 
-            if (useW)
-                Cast_W("Combo", useQ, useE);
-
-            if (!W.IsReady() || wSpell.ToggleState == 2)
+            switch (mode)
             {
-                if (useQ)
-                {
-                    Cast_Q();
-                }
+                case 0:
+                    if (useW)
+                        Cast_W("Combo", useQ, useE);
 
-                if (useE)
-                    Cast_E();
+                    if (!W.IsReady() || wSpell.ToggleState == 2)
+                    {
+                        if (useQ)
+                        {
+                            Cast_Q();
+                        }
+
+                        if (useE)
+                            Cast_E();
+                    }
+                    break;
+                case 1:
+                    if(useR)
+                        LineCombo(useQ, useE);
+                    else
+                        menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }));
+                break;
+
             }
         }
 
@@ -223,6 +240,8 @@ namespace xSaliceReligionAIO.Champions
                                 Utility.DelayAction.Add(25, () => Q.Cast(pred.CastPosition, packets()));
                             if (useE)
                                 Utility.DelayAction.Add(50, () => E.Cast(packets()));
+
+                            menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }));
                         }
                     }
                 }
@@ -252,9 +271,46 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void Cast_Q()
+        public void SmartKs()
+        {
+            if (!menu.Item("smartKS").GetValue<bool>())
+                return;
+            foreach (Obj_AI_Hero target in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(W.Range + Q.Range) && !x.IsDead && x.HasBuffOfType(BuffType.Invulnerability)))
+            {
+                //WQE
+                if ((Player.GetSpellDamage(target, SpellSlot.Q) + Player.GetSpellDamage(target, SpellSlot.E)) > target.Health + 20 && W.IsReady() && Q.IsReady() && E.IsReady())
+                {
+                    Cast_W("Combo", true, true);
+                }
+
+                //WQ
+                if (Q.IsKillable(target) && Player.Distance(target) > Q.Range && Q.IsReady() && W.IsReady()){
+                    Cast_W("Combo", true, false);
+                }
+                //WE
+                if (E.IsKillable(target) && Player.Distance(target) > E.Range && E.IsReady() && W.IsReady())
+                {
+                    Cast_W("Combo", false, true);
+                }
+                //Q
+                if (Q.IsKillable(target) && Player.Distance(target) < Q.Range && Q.IsReady())
+                {
+                    Cast_Q(target);
+                }
+                //E
+                if (E.IsKillable(target) && Player.Distance(target) < E.Range && E.IsReady())
+                {
+                    Cast_E(target);
+                }
+            }
+        }
+
+        public void Cast_Q(Obj_AI_Hero forceTarget = null)
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
+
+            if (forceTarget != null)
+                target = forceTarget;
 
             if (target == null || !Q.IsReady())
                 return;
@@ -303,9 +359,12 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void Cast_E()
+        public void Cast_E(Obj_AI_Hero forceTarget = null)
         {
             var target = SimpleTs.GetTarget(E.Range + W.Range, SimpleTs.DamageType.Physical);
+
+            if (forceTarget != null)
+                target = forceTarget;
 
             if (target == null || !E.IsReady())
                 return;
@@ -422,10 +481,38 @@ namespace xSaliceReligionAIO.Champions
             return false;
         }
 
+        private int _lasttick;
+        private void ModeSwitch()
+        {
+            int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
+            int lasttime = Environment.TickCount - _lasttick;
+
+            if (menu.Item("Combo_Switch").GetValue<KeyBind>().Active && lasttime > Game.Ping)
+            {
+                if (mode == 0)
+                {
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }, 1));
+                    _lasttick = Environment.TickCount + 300;
+                }
+                else if (mode == 1)
+                {
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }, 2));
+                    _lasttick = Environment.TickCount + 300;
+                }
+                else
+                {
+                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }));
+                    _lasttick = Environment.TickCount + 300;
+                }
+            }
+        }
+
         public override void Game_OnGameUpdate(EventArgs args)
         {
             if (Player.IsDead) return;
 
+            ModeSwitch();
+            SmartKs();
 
             if (menu.Item("ComboActive").GetValue<KeyBind>().Active)
             {
@@ -545,10 +632,13 @@ namespace xSaliceReligionAIO.Champions
         {
             var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Physical);
 
-            var pred = Prediction.GetPrediction(target, 250f);
-            var behindVec = pred.UnitPosition + Vector3.Normalize(pred.UnitPosition - Player.ServerPosition) * (W.Range);
+            if (target != null)
+            {
+                var pred = Prediction.GetPrediction(target, 250f);
+                var behindVec = pred.UnitPosition + Vector3.Normalize(pred.UnitPosition - Player.ServerPosition) * (W.Range);
 
-            Utility.DrawCircle(behindVec, 100, Color.Purple);
+                Utility.DrawCircle(behindVec, 100, Color.Purple);
+            }
 
             if (WShadow != null)
             {
@@ -560,6 +650,17 @@ namespace xSaliceReligionAIO.Champions
                 Utility.DrawCircle(RShadow.Position, 200, Color.Yellow);
             }
 
+            if (menu.Item("Current_Mode").GetValue<bool>())
+            {
+                Vector2 wts = Drawing.WorldToScreen(Player.Position);
+                int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
+                if (mode == 0)
+                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Normal");
+                else if (mode == 1)
+                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Line Combo");
+                else if (mode == 2)
+                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Coax");
+            }
         }
     }
 }
