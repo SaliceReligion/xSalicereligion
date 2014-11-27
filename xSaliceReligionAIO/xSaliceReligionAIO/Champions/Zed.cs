@@ -577,7 +577,7 @@ namespace xSaliceReligionAIO.Champions
                 {
                     var pred = Prediction.GetPrediction(target, 250f);
 
-                    if ((useQ ? Q.IsReady() : true) && (useE ? E.IsReady() : true))
+                    if ((!useQ || Q.IsReady()) && (!useE || E.IsReady()))
                     {
                         if ((pred.Hitchance >= HitChance.Medium && Q.GetPrediction(target).Hitchance >= HitChance.Medium))
                         {
@@ -605,13 +605,13 @@ namespace xSaliceReligionAIO.Champions
                     if (IsWall(vec.To2D()))
                         return;
 
-                    if ((useQ ? Q.IsReady() : true) && (useE ? E.IsReady() : true))
+                    if ((!useQ || Q.IsReady()) && (!useE || E.IsReady()))
                     {
                         if ((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium))
                         {
                             if (useQ && useE)
                             {
-                                if (menu.Item("W_Require_QE").GetValue<bool>())
+                                if (menu.Item("W_Require_QE").GetValue<bool>() && source == "Harass")
                                 {
                                     if (useQ && (useE && vec.Distance(target.ServerPosition) < E.Range))
                                     {
