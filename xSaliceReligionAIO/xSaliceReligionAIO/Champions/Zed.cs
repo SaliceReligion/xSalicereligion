@@ -58,12 +58,6 @@ namespace xSaliceReligionAIO.Champions
                     spellMenu.AddSubMenu(wMenu);
                 }
 
-                var eMenu = new Menu("EMenu", "EMenu");
-                {
-                    eMenu.AddItem(new MenuItem("Auto_E", "Auto E Enemy in range").SetValue(true));
-                    spellMenu.AddSubMenu(eMenu);
-                }
-
                 var rMenu = new Menu("RMenu", "RMenu");
                 {
                     rMenu.AddItem(new MenuItem("R_Place_line", "R Range behind target in Line").SetValue(new Slider(400, 250, 550)));
