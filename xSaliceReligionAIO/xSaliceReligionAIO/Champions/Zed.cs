@@ -251,21 +251,27 @@ namespace xSaliceReligionAIO.Champions
 
                 if (HasBuff(target, "zedulttargetmark"))
                 {
-                   
-                    if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - R.LastCastAttemptT > 0)
+
+                    if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - R.LastCastAttemptT > 0 && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
                     {
                         var BehindVector = Player.ServerPosition - Vector3.Normalize(target.ServerPosition - Player.ServerPosition) * W.Range;
                         if ((useE && pred.Hitchance >= HitChance.Medium) ||
                             Q.GetPrediction(target).Hitchance >= HitChance.Medium)
                         {
                             W.Cast(BehindVector);
-                            W.LastCastAttemptT = Environment.TickCount + 100;
-                            if (useQ)
-                                Utility.DelayAction.Add(25, () => Q.Cast(pred.CastPosition, packets()));
-                            if (useE)
-                                Utility.DelayAction.Add(50, () => E.Cast(packets()));
+                            W.LastCastAttemptT = Environment.TickCount + 300;
 
-                            menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }));
+                            if (useQ)
+                                predWQ = Q.GetPrediction(target).CastPosition;
+                            else
+                                predWQ = Vector3.Zero;
+
+                            if (useE)
+                                willEHit = true;
+                            else
+                                willEHit = false;
+
+                            Utility.DelayAction.Add(400, () => menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" })));
                         }
                     }
                 }
