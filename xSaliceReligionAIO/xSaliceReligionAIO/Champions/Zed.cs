@@ -598,9 +598,10 @@ namespace xSaliceReligionAIO.Champions
                 }
                 else
                 {
-                    var pred = Prediction.GetPrediction(target, 250f);
+                    
                     var predE = Prediction.GetPrediction(target, 250f);
-                    var vec = Player.ServerPosition + Vector3.Normalize(pred.UnitPosition - Player.ServerPosition)*W.Range;
+                    var vec = Player.ServerPosition + Vector3.Normalize(predE.UnitPosition - Player.ServerPosition) * W.Range;
+                    var pred = GetP2(vec, Q, target, true);
 
                     if (IsWall(vec.To2D()))
                         return;
