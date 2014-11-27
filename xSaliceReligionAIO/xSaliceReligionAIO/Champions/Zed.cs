@@ -52,7 +52,9 @@ namespace xSaliceReligionAIO.Champions
                 var wMenu = new Menu("WMenu", "WMenu");
                 {
                     wMenu.AddItem(new MenuItem("W_Require_QE", "Require both Q/W to hit Harass")).SetValue(false);
-                    //wMenu.AddItem(new MenuItem("useW_Health", "Use W if health below").SetValue(new Slider(25)));
+                    wMenu.AddItem(new MenuItem("W_Follow_Combo", "Follow W in Combo")).SetValue(false);
+                    wMenu.AddItem(new MenuItem("W_Follow_Harass", "Follow W in Harass")).SetValue(false);
+                    wMenu.AddItem(new MenuItem("useW_Health", "Use W swap if health below").SetValue(new Slider(25)));
                     spellMenu.AddSubMenu(wMenu);
                 }
 
@@ -65,7 +67,8 @@ namespace xSaliceReligionAIO.Champions
                 var rMenu = new Menu("RMenu", "RMenu");
                 {
                     rMenu.AddItem(new MenuItem("R_Place_line", "R Range behind target in Line").SetValue(new Slider(400, 250, 550)));
-                    //rMenu.AddItem(new MenuItem("R_If_Killable", "R If Enemy Is killable").SetValue(true));
+                    rMenu.AddItem(new MenuItem("R_Back", "R Swap if Enemy Is dead").SetValue(true));
+                    rMenu.AddItem(new MenuItem("useR_Health", "Use R swap if health below").SetValue(new Slider(10)));
                     //rMenu.AddItem(new MenuItem("Dont_R_If", "Do not R if > enemy")).SetValue(new Slider(3, 1, 5));
                     spellMenu.AddSubMenu(rMenu);
                 }
@@ -82,7 +85,7 @@ namespace xSaliceReligionAIO.Champions
                 combo.AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
                 combo.AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
                 combo.AddItem(new MenuItem("Ignite", "Use Ignite").SetValue(true));
-                combo.AddItem(new MenuItem("Bilge", "Use Bilge/Hextech").SetValue(true));
+                combo.AddItem(new MenuItem("Botrk", "Use Bilge/Botrk").SetValue(true));
                 //add to menu
                 menu.AddSubMenu(combo);
             }
@@ -177,6 +180,23 @@ namespace xSaliceReligionAIO.Champions
             switch (mode)
             {
                 case 0:
+
+                    var qTarget = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
+                    if (qTarget != null)
+                    {
+                        if (GetComboDamage(qTarget) >= qTarget.Health && Ignite_Ready() && menu.Item("Ignite").GetValue<bool>())
+                            Use_Ignite(qTarget);
+
+                        if (menu.Item("Botrk").GetValue<bool>())
+                        {
+                            if (HasBuff(qTarget, "zedulttargetmark")) 
+                                Use_Bilge(qTarget);
+
+                            if (HasBuff(qTarget, "zedulttargetmark"))
+                                Use_Botrk(qTarget);
+                        }
+                    }
+
                     if (useW)
                         Cast_W("Combo", useQ, useE);
 
@@ -190,6 +210,17 @@ namespace xSaliceReligionAIO.Champions
                         if (useE)
                             Cast_E();
                     }
+
+                    if (WShadow == null)
+                        return;
+
+                    var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
+                    if(target == null)
+                        return;
+
+                    if (menu.Item("W_Follow_Combo").GetValue<bool>() && wSpell.ToggleState == 2 && Player.Distance(target) > WShadow.Distance(target))
+                        W.Cast(packets());
+
                     break;
                 case 1:
                     if(useR)
@@ -213,6 +244,9 @@ namespace xSaliceReligionAIO.Champions
             if (target == null)
                 return;
 
+            if (getMarked() != null)
+                target = getMarked();
+
             if (W.IsReady() && wSpell.ToggleState == 0)
             {
                 Cast_W("Combo", useQ, useE);
@@ -225,11 +259,10 @@ namespace xSaliceReligionAIO.Champions
 
             if (WShadow.Distance(target) > R.Range - 100)
             {
-                Game.PrintChat("RAWRRR");
             }
             else
             {
-                if (useQ && (QCooldown - Game.Time) > (qSpell.Cooldown / 4))
+                if (useQ && (QCooldown - Game.Time) > (qSpell.Cooldown / 3))
                     return;
                 if (useE && !E.IsReady())
                     return;
@@ -239,7 +272,6 @@ namespace xSaliceReligionAIO.Champions
             {
                 if (wSpell.ToggleState == 2 && WShadow.Distance(target) < R.Range)
                 {
-                    Game.PrintChat("Wooozo");
                     W.Cast(packets());
                     Utility.DelayAction.Add(50, () => R.Cast(target, packets()));
                     Utility.DelayAction.Add(300, () => menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" })));
@@ -252,6 +284,9 @@ namespace xSaliceReligionAIO.Champions
             var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Physical);
             if (target == null)
                 return;
+
+            if (getMarked() != null)
+                target = getMarked();
 
             if (HasEnergy(Q.IsReady() && useQ, W.IsReady(), E.IsReady() && useE))
             {
@@ -296,6 +331,26 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
+        public void CheckShouldSwap()
+        {
+            var wHP = menu.Item("useW_Health").GetValue<Slider>().Value;
+            var rHP = menu.Item("useR_Health").GetValue<Slider>().Value;
+
+            if (RShadow != null)
+            {
+                if (GetHealthPercent() < rHP && rSpell.ToggleState == 2 && countEnemiesNearPosition(RShadow.ServerPosition, 400) < 0)
+                {
+                    R.Cast(packets());
+                    return;
+                }
+            }
+
+            if (WShadow != null)
+            {
+                if (GetHealthPercent() < wHP && wSpell.ToggleState == 2 && countEnemiesNearPosition(WShadow.ServerPosition, 400) < 0)
+                    W.Cast(packets());
+            }
+        }
         private void Harass(bool useQ, bool useW, bool useE)
         {
             //energy check
@@ -316,7 +371,22 @@ namespace xSaliceReligionAIO.Champions
 
                 if (useE)
                     Cast_E();
+
+                if (WShadow == null)
+                    return;
+
+                var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
+                if (target == null)
+                    return;
+
+                if (menu.Item("W_Follow_Harass").GetValue<bool>() && wSpell.ToggleState == 2 && Player.Distance(target) > WShadow.Distance(target))
+                    W.Cast(packets());
             }
+        }
+
+        public Obj_AI_Hero getMarked()
+        {
+            return ObjectManager.Get<Obj_AI_Hero>().FirstOrDefault(x => x.IsValidTarget(W.Range + Q.Range) && HasBuff(x, "zedulttargetmark") && x.IsVisible);
         }
 
         public void SmartKs()
@@ -357,6 +427,9 @@ namespace xSaliceReligionAIO.Champions
         public void Cast_Q(Obj_AI_Hero forceTarget = null)
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
+
+            if (getMarked() != null)
+                target = getMarked();
 
             if (forceTarget != null)
                 target = forceTarget;
@@ -411,6 +484,9 @@ namespace xSaliceReligionAIO.Champions
         public void Cast_E(Obj_AI_Hero forceTarget = null)
         {
             var target = SimpleTs.GetTarget(E.Range + W.Range, SimpleTs.DamageType.Physical);
+
+            if (getMarked() != null)
+                target = getMarked();
 
             if (forceTarget != null)
                 target = forceTarget;
@@ -471,6 +547,9 @@ namespace xSaliceReligionAIO.Champions
 
             if (target == null)
                 return;
+
+            if (getMarked() != null)
+                target = getMarked();
 
             if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
             {
@@ -597,6 +676,7 @@ namespace xSaliceReligionAIO.Champions
 
             ModeSwitch();
             SmartKs();
+            CheckShouldSwap();
 
             if (menu.Item("ComboActive").GetValue<KeyBind>().Active)
             {
@@ -698,7 +778,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (sender.Name == "Zed_Base_R_buf_tell.troy")
             {
-                if (rSpell.ToggleState == 2 && RShadow != null)
+                if (rSpell.ToggleState == 2 && RShadow != null && menu.Item("R_Back").GetValue<bool>())
                     R.Cast(packets());
             }
 
@@ -727,15 +807,25 @@ namespace xSaliceReligionAIO.Champions
 
         public override void Drawing_OnDraw(EventArgs args)
         {
-            var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Physical);
 
-            if (target != null)
-            {
-                var pred = Prediction.GetPrediction(target, 250f);
-                var behindVec = pred.UnitPosition + Vector3.Normalize(pred.UnitPosition - Player.ServerPosition) * (menu.Item("R_Place_line").GetValue<Slider>().Value);
+            if (menu.Item("Draw_Disabled").GetValue<bool>())
+                return;
 
-                Utility.DrawCircle(behindVec, 100, Color.Purple);
-            }
+            if (menu.Item("Draw_Q").GetValue<bool>())
+                if (Q.Level > 0)
+                    Utility.DrawCircle(Player.Position, Q.Range, Q.IsReady() ? Color.Green : Color.Red);
+
+            if (menu.Item("Draw_W").GetValue<bool>())
+                if (W.Level > 0)
+                    Utility.DrawCircle(Player.Position, W.Range - 2, W.IsReady() ? Color.Green : Color.Red);
+
+            if (menu.Item("Draw_E").GetValue<bool>())
+                if (E.Level > 0)
+                    Utility.DrawCircle(Player.Position, E.Range, E.IsReady() ? Color.Green : Color.Red);
+
+            if (menu.Item("Draw_R").GetValue<bool>())
+                if (R.Level > 0)
+                    Utility.DrawCircle(Player.Position, R.Range, R.IsReady() ? Color.Green : Color.Red);
 
             if (WShadow != null)
             {
