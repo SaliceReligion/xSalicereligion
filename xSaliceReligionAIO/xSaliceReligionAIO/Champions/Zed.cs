@@ -220,16 +220,16 @@ namespace xSaliceReligionAIO.Champions
                     if (useW)
                         Cast_W("Combo", useQ, useE);
 
-                    if (!W.IsReady() || wSpell.ToggleState == 2)
-                    {
+                    //if (!W.IsReady() || wSpell.ToggleState == 2)
+                    //{
                         if (useQ)
                         {
                             Cast_Q();
                         }
+                   // }
 
-                        if (useE)
-                            Cast_E();
-                    }
+                    if (useE)
+                        Cast_E();
 
                     if (WShadow == null)
                         return;
@@ -379,15 +379,8 @@ namespace xSaliceReligionAIO.Champions
                 if (useW)
                     Cast_W("Harass", useQ, useE);
 
-                if (useQ)
-                {
-                    if(useW && wSpell.ToggleState == 2)
-                        Cast_Q();
-                    else if(useW && !W.IsReady())
-                        Cast_Q();
-                    else if(!useW)
-                        Cast_Q();
-                }
+                if(useQ)
+                    Cast_Q();
 
                 if (useE)
                     Cast_E();
