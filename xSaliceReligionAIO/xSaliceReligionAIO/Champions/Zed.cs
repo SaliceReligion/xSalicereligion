@@ -470,8 +470,6 @@ namespace xSaliceReligionAIO.Champions
                                 willEHit = true;
                             else
                                 willEHit = false;
-
-                            Game.PrintChat("woooo");
                         }
                     }
                 }
@@ -486,11 +484,20 @@ namespace xSaliceReligionAIO.Champions
 
                     if ((useQ ? Q.IsReady() : true) && (useE ? E.IsReady() : true))
                     {
-                        if (menu.Item("W_Require_QE").GetValue<bool>() ? (pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium):
-                            (pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) && (predE.Hitchance >= HitChance.Medium))
+                        if ((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium))
                         {
-
-                            if (useQ || (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius))
+                            if (useQ && useE)
+                            {
+                                if (menu.Item("W_Require_QE").GetValue<bool>())
+                                {
+                                    if (useQ && (useE && vec.Distance(target.ServerPosition) < E.Range))
+                                    {
+                                        W.Cast(vec);
+                                        W.LastCastAttemptT = Environment.TickCount + 300;
+                                    }
+                                }
+                            }
+                            else if (useQ || (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius))
                             {
                                 W.Cast(vec);
                                 W.LastCastAttemptT = Environment.TickCount + 300;
