@@ -43,6 +43,7 @@ namespace xSaliceReligionAIO
         public Spell E;
         public Spell R;
         public Spell _r2;
+        public SpellDataInst qSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Q);
         public SpellDataInst wSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.W);
         public SpellDataInst rSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.R);
 

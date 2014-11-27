@@ -220,10 +220,20 @@ namespace xSaliceReligionAIO.Champions
                 return;
             }
 
-            if (useQ && !Q.IsReady())
+            if (WShadow == null)
                 return;
-            if (useE && !E.IsReady())
-                return;
+
+            if (WShadow.Distance(target) > R.Range - 100)
+            {
+                ;
+            }
+            else
+            {
+                if (useQ && (QCooldown - Game.Time) < qSpell.Cooldown / 5)
+                    return;
+                if (useE && !E.IsReady())
+                    return;
+            }
 
             if (WShadow != null && HasEnergy(Q.IsReady() && useQ, false, E.IsReady() && useE) && Environment.TickCount - CoaxDelay > 0)
             {
@@ -608,12 +618,14 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
+        private float QCooldown;
         public override void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base unit, GameObjectProcessSpellCastEventArgs args)
         {
             if (!unit.IsMe)
                 return;
 
-            //Game.PrintChat("Spell: " + args.SData.Name);
+            if (args.SData.Name == "ZedShuriken")
+                QCooldown = Game.Time + qSpell.Cooldown;
 
             if (args.SData.Name == "ZedShadowDash")
             {
@@ -740,7 +752,7 @@ namespace xSaliceReligionAIO.Champions
                 Vector2 wts = Drawing.WorldToScreen(Player.Position);
                 int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
                 if (mode == 0)
-                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Normal");
+                    Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Normal ");
                 else if (mode == 1)
                     Drawing.DrawText(wts[0] - 20, wts[1], Color.White, "Line Combo");
                 else if (mode == 2)
