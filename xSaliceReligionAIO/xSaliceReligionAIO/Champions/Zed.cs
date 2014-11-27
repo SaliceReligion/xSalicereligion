@@ -582,7 +582,7 @@ namespace xSaliceReligionAIO.Champions
                         if ((pred.Hitchance >= HitChance.Medium && Q.GetPrediction(target).Hitchance >= HitChance.Medium))
                         {
                             W.Cast(pred.UnitPosition);
-                            W.LastCastAttemptT = Environment.TickCount + 300;
+                            W.LastCastAttemptT = Environment.TickCount + 500;
 
                             if (useQ)
                                 predWQ = pred.CastPosition;
@@ -616,19 +616,19 @@ namespace xSaliceReligionAIO.Champions
                                     if (useQ && (useE && vec.Distance(target.ServerPosition) < E.Range))
                                     {
                                         W.Cast(vec);
-                                        W.LastCastAttemptT = Environment.TickCount + 300;
+                                        W.LastCastAttemptT = Environment.TickCount + 500;
                                     }
                                 }
                             }
                             else if (useQ || (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius))
                             {
                                 W.Cast(vec);
-                                W.LastCastAttemptT = Environment.TickCount + 300;
+                                W.LastCastAttemptT = Environment.TickCount + 500;
                             }
                             else if(!useQ && !useE)
                             {
                                 W.Cast(vec);
-                                W.LastCastAttemptT = Environment.TickCount + 300;
+                                W.LastCastAttemptT = Environment.TickCount + 500;
                             }
 
                             if (useQ)
