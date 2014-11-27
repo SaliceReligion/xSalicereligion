@@ -19,6 +19,7 @@ namespace xSaliceReligionAIO
             GameObject.OnCreate += GameObject_OnCreate;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             Game.OnGameSendPacket += Game_OnSendPacket;
+            GameObject.OnDelete += GameObject_OnDelete;
         }
 
         public Champion(bool load)
@@ -42,6 +43,7 @@ namespace xSaliceReligionAIO
         public Spell E;
         public Spell R;
         public Spell _r2;
+        public SpellDataInst wSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.W);
         public SpellDataInst rSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.R);
 
         //summoners
@@ -259,6 +261,23 @@ namespace xSaliceReligionAIO
             });
         }
 
+        public PredictionOutput GetP2(Vector3 pos, Spell spell, Obj_AI_Base target, bool aoe)
+        {
+            return Prediction.GetPrediction(new PredictionInput
+            {
+                Unit = target,
+                Delay = spell.Delay,
+                Radius = spell.Width,
+                Speed = spell.Speed,
+                From = pos,
+                Range = spell.Range,
+                Collision = spell.Collision,
+                Type = spell.Type,
+                RangeCheckFrom = pos,
+                Aoe = aoe,
+            });
+        }
+
         public PredictionOutput GetPCircle(Vector3 pos, Spell spell, Obj_AI_Base target, bool aoe)
         {
             return Prediction.GetPrediction(new PredictionInput
@@ -271,7 +290,7 @@ namespace xSaliceReligionAIO
                 Range = float.MaxValue,
                 Collision = spell.Collision,
                 Type = spell.Type,
-                RangeCheckFrom = Player.ServerPosition,
+                RangeCheckFrom = pos,
                 Aoe = aoe,
             });
         }
@@ -426,6 +445,11 @@ namespace xSaliceReligionAIO
         }
 
         public virtual void GameObject_OnCreate(GameObject sender, EventArgs args)
+        {
+            //for champs to use
+        }
+
+        public virtual void GameObject_OnDelete(GameObject sender, EventArgs args)
         {
             //for champs to use
         }
