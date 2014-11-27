@@ -49,12 +49,6 @@ namespace xSaliceReligionAIO.Champions
 
             var spellMenu = new Menu("SpellMenu", "SpellMenu");
             {
-                var qMenu = new Menu("QMenu", "QMenu");
-                {
-                    //qMenu.AddItem(new MenuItem("E_On_Killable", "E to KS").SetValue(true));
-                    spellMenu.AddSubMenu(qMenu);
-                }
-
                 var wMenu = new Menu("WMenu", "WMenu");
                 {
                     wMenu.AddItem(new MenuItem("W_Require_QE", "Require both Q/W to hit Harass")).SetValue(false);
@@ -64,14 +58,13 @@ namespace xSaliceReligionAIO.Champions
 
                 var eMenu = new Menu("EMenu", "EMenu");
                 {
-                    //eMenu.AddItem(new MenuItem("E_On_Killable", "E to KS").SetValue(true));
-                    //eMenu.AddItem(new MenuItem("E_Wait_Q", "Wait For Q").SetValue(true));
+                    eMenu.AddItem(new MenuItem("Auto_E", "Auto E Enemy in range").SetValue(true));
                     spellMenu.AddSubMenu(eMenu);
                 }
 
                 var rMenu = new Menu("RMenu", "RMenu");
                 {
-                    rMenu.AddItem(new MenuItem("R_Place_line", "R Range behind target in Line").SetValue(new Slider(550, 300, 550)));
+                    rMenu.AddItem(new MenuItem("R_Place_line", "R Range behind target in Line").SetValue(new Slider(400, 250, 550)));
                     //rMenu.AddItem(new MenuItem("R_If_Killable", "R If Enemy Is killable").SetValue(true));
                     //rMenu.AddItem(new MenuItem("Dont_R_If", "Do not R if > enemy")).SetValue(new Slider(3, 1, 5));
                     spellMenu.AddSubMenu(rMenu);
@@ -211,23 +204,35 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
+        private int CoaxDelay;
+
         public void CoaxCombo(bool useQ, bool useE)
         {
-            var target = SimpleTs.GetTarget(W.Range, SimpleTs.DamageType.Physical);
+            var target = SimpleTs.GetTarget(W.Range + Q.Range, SimpleTs.DamageType.Physical);
 
             if (target == null)
                 return;
 
-            if (W.IsReady())
+            if (W.IsReady() && wSpell.ToggleState == 0)
+            {
                 Cast_W("Combo", useQ, useE);
+                CoaxDelay = Environment.TickCount + 500;
+                return;
+            }
 
-            if (WShadow != null && HasEnergy(Q.IsReady() && useQ, false, E.IsReady() && useE) && Q.IsReady() && E.IsReady())
+            if (useQ && !Q.IsReady())
+                return;
+            if (useE && !E.IsReady())
+                return;
+
+            if (WShadow != null && HasEnergy(Q.IsReady() && useQ, false, E.IsReady() && useE) && Environment.TickCount - CoaxDelay > 0)
             {
                 if (wSpell.ToggleState == 2 && WShadow.Distance(target) < R.Range)
                 {
+                    Game.PrintChat("Wooozo");
                     W.Cast(packets());
-                    R.Cast(target, packets());
-                    menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }));
+                    Utility.DelayAction.Add(50, () => R.Cast(target, packets()));
+                    Utility.DelayAction.Add(300, () => menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" })));
                 }
             }
         }
