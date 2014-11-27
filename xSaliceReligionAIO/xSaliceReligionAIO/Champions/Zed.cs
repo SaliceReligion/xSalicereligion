@@ -275,7 +275,8 @@ namespace xSaliceReligionAIO.Champions
         {
             if (!menu.Item("smartKS").GetValue<bool>())
                 return;
-            foreach (Obj_AI_Hero target in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(W.Range + Q.Range) && !x.IsDead && x.HasBuffOfType(BuffType.Invulnerability)))
+
+            foreach (Obj_AI_Hero target in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(W.Range + Q.Range) && !x.IsDead && !x.HasBuffOfType(BuffType.Invulnerability)))
             {
                 //WQE
                 if ((Player.GetSpellDamage(target, SpellSlot.Q) + Player.GetSpellDamage(target, SpellSlot.E)) > target.Health + 20 && W.IsReady() && Q.IsReady() && E.IsReady())
@@ -567,8 +568,10 @@ namespace xSaliceReligionAIO.Champions
             {
                 if (CurrentWShadow == Vector3.Zero)
                     return null;
+                if(RShadow != null)
+                    return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow" && minion != RShadow && minion.ServerPosition != RShadow.ServerPosition);
 
-                return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow" && minion != RShadow);
+                return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow");
             }
         }
 
@@ -578,6 +581,8 @@ namespace xSaliceReligionAIO.Champions
             {
                 if (CurrentRShadow == Vector3.Zero)
                     return null;
+                if(CurrentRShadow == Vector3.Zero)
+                    return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow");
 
                 return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow" && minion.Distance(CurrentRShadow) < 200);
             }
