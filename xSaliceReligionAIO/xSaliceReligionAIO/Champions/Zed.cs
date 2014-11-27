@@ -71,7 +71,7 @@ namespace xSaliceReligionAIO.Champions
 
                 var rMenu = new Menu("RMenu", "RMenu");
                 {
-                    //rMenu.AddItem(new MenuItem("R_Wait_For_Q", "Wait for Q Mark").SetValue(false));
+                    rMenu.AddItem(new MenuItem("R_Place_line", "R Range behind target in Line").SetValue(new Slider(550, 300, 550)));
                     //rMenu.AddItem(new MenuItem("R_If_Killable", "R If Enemy Is killable").SetValue(true));
                     //rMenu.AddItem(new MenuItem("Dont_R_If", "Do not R if > enemy")).SetValue(new Slider(3, 1, 5));
                     spellMenu.AddSubMenu(rMenu);
@@ -254,7 +254,10 @@ namespace xSaliceReligionAIO.Champions
 
                     if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - R.LastCastAttemptT > 0 && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
                     {
-                        var BehindVector = Player.ServerPosition - Vector3.Normalize(target.ServerPosition - Player.ServerPosition) * W.Range;
+                        var dist = menu.Item("R_Place_line").GetValue<Slider>().Value;
+                        var BehindVector = Player.ServerPosition - Vector3.Normalize(target.ServerPosition - Player.ServerPosition) * dist;
+                        Game.PrintChat("dist: " + dist);
+
                         if ((useE && pred.Hitchance >= HitChance.Medium) ||
                             Q.GetPrediction(target).Hitchance >= HitChance.Medium)
                         {
@@ -712,7 +715,7 @@ namespace xSaliceReligionAIO.Champions
             if (target != null)
             {
                 var pred = Prediction.GetPrediction(target, 250f);
-                var behindVec = pred.UnitPosition + Vector3.Normalize(pred.UnitPosition - Player.ServerPosition) * (W.Range);
+                var behindVec = pred.UnitPosition + Vector3.Normalize(pred.UnitPosition - Player.ServerPosition) * (menu.Item("R_Place_line").GetValue<Slider>().Value);
 
                 Utility.DrawCircle(behindVec, 100, Color.Purple);
             }
