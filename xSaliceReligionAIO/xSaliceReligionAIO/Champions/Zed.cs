@@ -624,6 +624,8 @@ namespace xSaliceReligionAIO.Champions
                                     if (vec.Distance(target.ServerPosition) < E.Range)
                                     {
                                         xSLxOrbwalker.SetMovement(false);
+                                        Orbwalker.SetMovement(false);
+
                                         W.Cast(vec, true);
                                         W.LastCastAttemptT = Environment.TickCount + 500;
                                     }
@@ -631,6 +633,8 @@ namespace xSaliceReligionAIO.Champions
                                 else
                                 {
                                     xSLxOrbwalker.SetMovement(false);
+                                    Orbwalker.SetMovement(false);
+
                                     W.Cast(vec, true);
                                     W.LastCastAttemptT = Environment.TickCount + 500;
                                 }
@@ -638,12 +642,16 @@ namespace xSaliceReligionAIO.Champions
                             else if (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius)
                             {
                                 xSLxOrbwalker.SetMovement(false);
+                                Orbwalker.SetMovement(false);
+
                                 W.Cast(vec, true);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
                             }
                             else if (useQ)
                             {
                                 xSLxOrbwalker.SetMovement(false);
+                                Orbwalker.SetMovement(false);
+
                                 W.Cast(vec, true);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
                             }
@@ -757,8 +765,10 @@ namespace xSaliceReligionAIO.Champions
             CheckShouldSwap();
 
             if (W.LastCastAttemptT - Environment.TickCount < 0)
+            {
                 xSLxOrbwalker.SetMovement(true);
-
+                Orbwalker.SetMovement(true);
+            }
             if (menu.Item("Escape").GetValue<KeyBind>().Active && W.IsReady())
             {
                 var vec = Player.ServerPosition + (Game.CursorPos - Player.ServerPosition)*W.Range;
