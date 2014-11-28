@@ -218,15 +218,15 @@ namespace xSaliceReligionAIO.Champions
                     }
 
                     if (useW)
-                        Cast_W("Combo", useQ, useE);
+                        Cast_W("Combo", useQ, useE, false);
 
-                    //if (!W.IsReady() || wSpell.ToggleState == 2)
-                    //{
+                    if (!W.IsReady() || wSpell.ToggleState == 2)
+                    {
                         if (useQ)
                         {
                             Cast_Q();
                         }
-                   // }
+                    }
 
                     if (useE)
                         Cast_E();
@@ -269,7 +269,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (W.IsReady() && wSpell.ToggleState == 0)
             {
-                Cast_W("Combo", useQ, useE);
+                Cast_W("Combo", useQ, useE, false);
                 CoaxDelay = Environment.TickCount + 500;
                 return;
             }
@@ -335,7 +335,7 @@ namespace xSaliceReligionAIO.Champions
                             W.LastCastAttemptT = Environment.TickCount + 300;
 
                             if (useQ)
-                                predWQ = Q.GetPrediction(target).CastPosition;
+                                predWQ = Q.GetPrediction(target).UnitPosition;
                             else
                                 predWQ = Vector3.Zero;
 
@@ -377,7 +377,7 @@ namespace xSaliceReligionAIO.Champions
             if (HasEnergy(Q.IsReady() && useQ, W.IsReady() && useW, E.IsReady() && useE))
             {
                 if (useW)
-                    Cast_W("Harass", useQ, useE);
+                    Cast_W("Harass", useQ, useE, false);
 
                 if(useQ)
                     Cast_Q();
@@ -412,17 +412,17 @@ namespace xSaliceReligionAIO.Champions
                 //WQE
                 if ((Player.GetSpellDamage(target, SpellSlot.Q) + Player.GetSpellDamage(target, SpellSlot.E)) > target.Health + 20 && W.IsReady() && Q.IsReady() && E.IsReady())
                 {
-                    Cast_W("Combo", true, true);
+                    Cast_W("Combo", true, true, true);
                 }
 
                 //WQ
                 if (Q.IsKillable(target) && Player.Distance(target) > Q.Range && Q.IsReady() && W.IsReady()){
-                    Cast_W("Combo", true, false);
+                    Cast_W("Combo", true, false, true);
                 }
                 //WE
                 if (E.IsKillable(target) && Player.Distance(target) > E.Range && E.IsReady() && W.IsReady())
                 {
-                    Cast_W("Combo", false, true);
+                    Cast_W("Combo", false, true, true);
                 }
                 //Q
                 if (Q.IsKillable(target) && Player.Distance(target) < Q.Range && Q.IsReady())
@@ -554,7 +554,8 @@ namespace xSaliceReligionAIO.Champions
 
         private Vector3 predWQ;
         private bool willEHit;
-        public void Cast_W(string source, bool useQ, bool useE)
+
+        public void Cast_W(string source, bool useQ, bool useE, bool ks)
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
 
@@ -592,48 +593,51 @@ namespace xSaliceReligionAIO.Champions
                 else
                 {
                     
-                    var predE = Prediction.GetPrediction(target, 250f);
-                    var vec = Player.ServerPosition + Vector3.Normalize(predE.UnitPosition - Player.ServerPosition) * W.Range;
-                    var pred = GetP2(vec, Q, target, true);
+                    var predE = Prediction.GetPrediction(target, .25f);
+                    var vec = Player.ServerPosition + Vector3.Normalize(predE.CastPosition - Player.ServerPosition) * W.Range;
 
                     if (IsWall(vec.To2D()))
                         return;
 
+
                     if ((!useQ || Q.IsReady()) && (!useE || E.IsReady()))
                     {
-                        if ((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium))
+                        var pred = GetP2(vec, Q, target, true);
+
+                        if (((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium)) || ks)
                         {
                             if (useQ && useE)
                             {
                                 if (menu.Item("W_Require_QE").GetValue<bool>() && source == "Harass")
                                 {
-                                    if (useQ && (useE && vec.Distance(target.ServerPosition) < E.Range))
+                                    if (vec.Distance(target.ServerPosition) < E.Range)
                                     {
                                         W.Cast(vec);
                                         W.LastCastAttemptT = Environment.TickCount + 500;
                                     }
                                 }
+                                else
+                                {
+                                    W.Cast(vec);
+                                    W.LastCastAttemptT = Environment.TickCount + 500;
+                                    Utility.DelayAction.Add(1, () => Q.Cast(pred.CastPosition));
+                                }
                             }
-                            else if (useQ || (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius))
+                            else if (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius)
                             {
                                 W.Cast(vec);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
+                                Utility.DelayAction.Add(1, () => E.Cast(packets()));
                             }
-                            else if(!useQ && !useE)
+                            else if (useQ)
                             {
                                 W.Cast(vec);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
+                                Utility.DelayAction.Add(1, () => Q.Cast(pred.CastPosition));
                             }
 
-                            if (useQ)
-                                predWQ = pred.CastPosition;
-                            else
-                                predWQ = Vector3.Zero;
-
-                            if (useE && vec.Distance(target.ServerPosition) < E.Range)
-                                willEHit = true;
-                            else
-                                willEHit = false;
+                            predWQ = useQ ? pred.CastPosition : Vector3.Zero;
+                            willEHit = useE && vec.Distance(target.ServerPosition) < E.Range;
                         }
                     }
                 }
