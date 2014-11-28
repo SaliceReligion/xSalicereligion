@@ -269,7 +269,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (W.IsReady() && wSpell.ToggleState == 0)
             {
-                Cast_W("Combo", useQ, useE, false);
+                Cast_W("Coax", useQ, useE, false);
                 CoaxDelay = Environment.TickCount + 500;
                 return;
             }
@@ -604,11 +604,11 @@ namespace xSaliceReligionAIO.Champions
                     {
                         var pred = GetP2(vec, Q, target, true);
 
-                        if (((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium)) || ks)
+                        if (((pred.Hitchance >= HitChance.High || Q.GetPrediction(target).Hitchance >= HitChance.High) || (predE.Hitchance >= HitChance.High)) || ks)
                         {
                             if (useQ && useE)
                             {
-                                if (menu.Item("W_Require_QE").GetValue<bool>() && source == "Harass")
+                                if ((menu.Item("W_Require_QE").GetValue<bool>() && source == "Harass") || source == "Coax")
                                 {
                                     if (vec.Distance(target.ServerPosition) < E.Range)
                                     {
