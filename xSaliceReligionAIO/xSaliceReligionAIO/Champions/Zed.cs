@@ -518,8 +518,14 @@ namespace xSaliceReligionAIO.Champions
             }
             else
             {
-                CastBasicSkillShot(Q, Q.Range,SimpleTs.DamageType.Physical, HitChance.High);
-                Q.LastCastAttemptT = Environment.TickCount + 500;
+                var pred = Q.GetPrediction(target, true);
+
+                if (pred.Hitchance >= HitChance.High)
+                {
+                    xSLxOrbwalker.SetMovement(false);
+                    Q.Cast(target, packets());
+                    Q.LastCastAttemptT = Environment.TickCount + 500;
+                }
             }
         }
 
