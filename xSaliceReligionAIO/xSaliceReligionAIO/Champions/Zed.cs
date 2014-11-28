@@ -50,7 +50,6 @@ namespace xSaliceReligionAIO.Champions
                 {
                     wMenu.AddItem(new MenuItem("W_Require_QE", "Require both Q/W to hit Harass")).SetValue(false);
                     wMenu.AddItem(new MenuItem("W_Follow_Combo", "Follow W in Combo")).SetValue(false);
-                    wMenu.AddItem(new MenuItem("W_Follow_Harass", "Follow W in Harass")).SetValue(false);
                     wMenu.AddItem(new MenuItem("useW_Health", "Use W swap if health below").SetValue(new Slider(25)));
                     spellMenu.AddSubMenu(wMenu);
                 }
@@ -91,7 +90,6 @@ namespace xSaliceReligionAIO.Champions
             var farm = new Menu("LaneClear", "LaneClear");
             {
                 farm.AddItem(new MenuItem("UseQFarm", "Use Q").SetValue(true));
-                farm.AddItem(new MenuItem("UseWFarm", "Use W").SetValue(true));
                 farm.AddItem(new MenuItem("UseEFarm", "Use E").SetValue(true));
                 farm.AddItem(new MenuItem("LaneClear_useE_minHit", "Use E if min. hit").SetValue(new Slider(2, 1, 6)));
                 //add to menu
@@ -237,7 +235,7 @@ namespace xSaliceReligionAIO.Champions
                     if(target == null)
                         return;
 
-                    if (menu.Item("W_Follow_Combo").GetValue<bool>() && wSpell.ToggleState == 2 && Player.Distance(target) > WShadow.Distance(target))
+                    if (menu.Item("W_Follow_Combo").GetValue<bool>() && wSpell.ToggleState == 2 && Player.Distance(target) > WShadow.Distance(target) && HasBuff(target, "zedulttargetmark"))
                         W.Cast(packets());
 
                     break;
@@ -377,16 +375,6 @@ namespace xSaliceReligionAIO.Champions
 
                 if (useE)
                     Cast_E();
-
-                if (WShadow == null)
-                    return;
-
-                var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
-                if (target == null)
-                    return;
-
-                if (menu.Item("W_Follow_Harass").GetValue<bool>() && wSpell.ToggleState == 2 && Player.Distance(target) > WShadow.Distance(target))
-                    W.Cast(packets());
             }
         }
 
@@ -565,13 +553,18 @@ namespace xSaliceReligionAIO.Champions
 
         private void Cast_W(string source, bool useQ, bool useE)
         {
-            var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
+            var target = SimpleTs.GetTarget(Q.Range + W.Range - 75, SimpleTs.DamageType.Physical);
 
             if (target == null)
                 return;
 
             if (GetMarked() != null)
                 target = GetMarked();
+
+            if (E.Level < 1)
+                useE = false;
+            if (Q.Level < 1)
+                useQ = false;
 
             if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - W.LastCastAttemptT > 0)
             {
@@ -652,24 +645,11 @@ namespace xSaliceReligionAIO.Champions
         private void Farm()
         {
             List<Obj_AI_Base> allMinionsQ = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly);
-            List<Obj_AI_Base> allMinionsW = MinionManager.GetMinions(Player.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly);
             List<Obj_AI_Base> allMinionsE = MinionManager.GetMinions(Player.ServerPosition, E.Range, MinionTypes.All, MinionTeam.NotAlly);
 
             var useQ = menu.Item("UseQFarm").GetValue<bool>();
-            var useW = menu.Item("UseWFarm").GetValue<bool>();
             var useE = menu.Item("UseEFarm").GetValue<bool>();
-
-            if (useW && wSpell.ToggleState == 0 && W.IsReady())
-            {
-                var pred = W.GetCircularFarmLocation(allMinionsW);
-
-                if (pred.MinionsHit > 2)
-                {
-                    W.Cast(pred.Position);
-                    return;
-                }
-            }
-
+             
             if (useQ && Q.IsReady())
             {
                 var pred = Q.GetLineFarmLocation(allMinionsQ);
