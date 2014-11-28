@@ -102,6 +102,7 @@ namespace xSaliceReligionAIO.Champions
             var misc = new Menu("Misc", "Misc");
             {
                 misc.AddItem(new MenuItem("smartKS", "Use Smart KS System").SetValue(true));
+                misc.AddItem(new MenuItem("Use_W_KS", "Use W for KS").SetValue(true));
                 //add to menu
                 menu.AddSubMenu(misc);
             }
@@ -218,7 +219,7 @@ namespace xSaliceReligionAIO.Champions
                     }
 
                     if (useW)
-                        Cast_W("Combo", useQ, useE, false);
+                        Cast_W("Combo", useQ, useE);
 
                     if (!W.IsReady() || wSpell.ToggleState == 2)
                     {
@@ -269,7 +270,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (W.IsReady() && wSpell.ToggleState == 0)
             {
-                Cast_W("Coax", useQ, useE, false);
+                Cast_W("Coax", useQ, useE);
                 CoaxDelay = Environment.TickCount + 500;
                 return;
             }
@@ -377,7 +378,7 @@ namespace xSaliceReligionAIO.Champions
             if (HasEnergy(Q.IsReady() && useQ, W.IsReady() && useW, E.IsReady() && useE))
             {
                 if (useW)
-                    Cast_W("Harass", useQ, useE, false);
+                    Cast_W("Harass", useQ, useE);
 
                 if(useQ)
                     Cast_Q();
@@ -406,23 +407,38 @@ namespace xSaliceReligionAIO.Champions
         {
             if (!menu.Item("smartKS").GetValue<bool>())
                 return;
-
             foreach (Obj_AI_Hero target in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(W.Range + Q.Range) && !x.IsDead && !x.HasBuffOfType(BuffType.Invulnerability)))
             {
                 //WQE
                 if ((Player.GetSpellDamage(target, SpellSlot.Q) + Player.GetSpellDamage(target, SpellSlot.E)) > target.Health + 20 && W.IsReady() && Q.IsReady() && E.IsReady())
                 {
-                    Cast_W("Combo", true, true, true);
+                    if (menu.Item("Use_W_KS").GetValue<bool>())
+                        Cast_W("Combo", true, true);
+                    else
+                    {
+                        Cast_Q(target);
+                        Cast_E(target);
+                    }
                 }
 
                 //WQ
                 if (Q.IsKillable(target) && Player.Distance(target) > Q.Range && Q.IsReady() && W.IsReady()){
-                    Cast_W("Combo", true, false, true);
+                    if (menu.Item("Use_W_KS").GetValue<bool>())
+                        Cast_W("Combo", true, true);
+                    else
+                    {
+                        Cast_Q(target);
+                    }
                 }
                 //WE
                 if (E.IsKillable(target) && Player.Distance(target) > E.Range && E.IsReady() && W.IsReady())
                 {
-                    Cast_W("Combo", false, true, true);
+                    if (menu.Item("Use_W_KS").GetValue<bool>())
+                        Cast_W("Combo", true, true);
+                    else
+                    {
+                        Cast_E(target);
+                    }
                 }
                 //Q
                 if (Q.IsKillable(target) && Player.Distance(target) < Q.Range && Q.IsReady())
@@ -555,7 +571,7 @@ namespace xSaliceReligionAIO.Champions
         private Vector3 predWQ;
         private bool willEHit;
 
-        public void Cast_W(string source, bool useQ, bool useE, bool ks)
+        public void Cast_W(string source, bool useQ, bool useE)
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
 
@@ -604,7 +620,7 @@ namespace xSaliceReligionAIO.Champions
                     {
                         var pred = GetP2(vec, Q, target, true);
 
-                        if (((pred.Hitchance >= HitChance.High || Q.GetPrediction(target).Hitchance >= HitChance.High) || (predE.Hitchance >= HitChance.High)) || ks)
+                        if (((pred.Hitchance >= HitChance.High || Q.GetPrediction(target).Hitchance >= HitChance.High) || (predE.Hitchance >= HitChance.High)))
                         {
                             if (useQ && useE)
                             {
