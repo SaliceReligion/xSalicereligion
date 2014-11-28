@@ -612,7 +612,7 @@ namespace xSaliceReligionAIO.Champions
                     {
                         var pred = GetP2(vec, Q, target, true);
 
-                        if (((pred.Hitchance >= HitChance.High || Q.GetPrediction(target).Hitchance >= HitChance.High) || (predE.Hitchance >= HitChance.High)))
+                        if (((pred.Hitchance >= HitChance.Medium || Q.GetPrediction(target).Hitchance >= HitChance.Medium) || (predE.Hitchance >= HitChance.Medium)))
                         {
                             if (useQ && useE)
                             {
