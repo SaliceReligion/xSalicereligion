@@ -553,7 +553,7 @@ namespace xSaliceReligionAIO.Champions
 
         private void Cast_W(string source, bool useQ, bool useE)
         {
-            var target = SimpleTs.GetTarget(Q.Range + W.Range - 75, SimpleTs.DamageType.Physical);
+            var target = SimpleTs.GetTarget(Q.Range + W.Range - 100, SimpleTs.DamageType.Physical);
 
             if (target == null)
                 return;
@@ -642,6 +642,15 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
+        private void LastHitQ()
+        {
+            List<Obj_AI_Base> allMinionsQ = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly);
+
+            if(allMinionsQ.Count > 0)
+                if (Player.GetSpellDamage(allMinionsQ[0], SpellSlot.Q)*.6 > allMinionsQ[0].Health + 30)
+                    Q.Cast(allMinionsQ[0]);
+        }
+
         private void Farm()
         {
             List<Obj_AI_Base> allMinionsQ = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly);
@@ -725,8 +734,8 @@ namespace xSaliceReligionAIO.Champions
             }
             else
             {
-                //if (menu.Item("LastHitQ").GetValue<KeyBind>().Active)
-                   // Cast_Q(false);
+                if (menu.Item("LastHitQ").GetValue<KeyBind>().Active)
+                    LastHitQ();
 
                 if (menu.Item("LaneClearActive").GetValue<KeyBind>().Active)
                     Farm();
