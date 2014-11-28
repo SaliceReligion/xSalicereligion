@@ -612,31 +612,28 @@ namespace xSaliceReligionAIO.Champions
                                 {
                                     if (vec.Distance(target.ServerPosition) < E.Range)
                                     {
-                                        W.Cast(vec);
+                                        W.Cast(vec, true);
                                         W.LastCastAttemptT = Environment.TickCount + 500;
                                     }
                                 }
                                 else
                                 {
-                                    W.Cast(vec);
+                                    W.Cast(vec, true);
                                     W.LastCastAttemptT = Environment.TickCount + 500;
-                                    Utility.DelayAction.Add(1, () => Q.Cast(pred.CastPosition));
                                 }
                             }
                             else if (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius)
                             {
-                                W.Cast(vec);
+                                W.Cast(vec, true);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
-                                Utility.DelayAction.Add(1, () => E.Cast(packets()));
                             }
                             else if (useQ)
                             {
-                                W.Cast(vec);
+                                W.Cast(vec, true);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
-                                Utility.DelayAction.Add(1, () => Q.Cast(pred.CastPosition));
                             }
 
-                            predWQ = useQ ? pred.CastPosition : Vector3.Zero;
+                            predWQ = useQ ? pred.UnitPosition : Vector3.Zero;
                             willEHit = useE && vec.Distance(target.ServerPosition) < E.Range;
                         }
                     }
@@ -730,7 +727,10 @@ namespace xSaliceReligionAIO.Champions
                 if (W.LastCastAttemptT - Environment.TickCount > 0)
                 {
                     if (predWQ != Vector3.Zero)
+                    {
                         Q.Cast(predWQ, packets());
+                        predWQ = Vector3.Zero;
+                    }
 
                     if (willEHit)
                         E.Cast(packets());
