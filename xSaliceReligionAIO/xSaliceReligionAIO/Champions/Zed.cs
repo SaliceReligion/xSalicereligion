@@ -1,12 +1,7 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using LeagueSharp;
 using LeagueSharp.Common;
-using Microsoft.Win32;
 using SharpDX;
 using Color = System.Drawing.Color;
 
@@ -20,8 +15,8 @@ namespace xSaliceReligionAIO.Champions
             LoadMenu();
         }
 
-        private Vector3 CurrentWShadow = Vector3.Zero;
-        private Vector3 CurrentRShadow = Vector3.Zero;
+        private Vector3 _currentWShadow = Vector3.Zero;
+        private Vector3 _currentRShadow = Vector3.Zero;
 
         private void LoadSpells()
         {
@@ -256,7 +251,7 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        private int CoaxDelay;
+        private int _coaxDelay;
 
         public void CoaxCombo(bool useQ, bool useE)
         {
@@ -265,13 +260,13 @@ namespace xSaliceReligionAIO.Champions
             if (target == null)
                 return;
 
-            if (getMarked() != null)
-                target = getMarked();
+            if (GetMarked() != null)
+                target = GetMarked();
 
             if (W.IsReady() && wSpell.ToggleState == 0)
             {
                 Cast_W("Coax", useQ, useE);
-                CoaxDelay = Environment.TickCount + 500;
+                _coaxDelay = Environment.TickCount + 500;
                 return;
             }
 
@@ -283,13 +278,13 @@ namespace xSaliceReligionAIO.Champions
             }
             else
             {
-                if (useQ && (QCooldown - Game.Time) > (qSpell.Cooldown / 3))
+                if (useQ && (_qCooldown - Game.Time) > (qSpell.Cooldown / 3))
                     return;
                 if (useE && !E.IsReady())
                     return;
             }
 
-            if (WShadow != null && HasEnergy(Q.IsReady() && useQ, false, E.IsReady() && useE) && Environment.TickCount - CoaxDelay > 0)
+            if (WShadow != null && HasEnergy(Q.IsReady() && useQ, false, E.IsReady() && useE) && Environment.TickCount - _coaxDelay > 0)
             {
                 if (wSpell.ToggleState == 2 && WShadow.Distance(target) < R.Range)
                 {
@@ -306,8 +301,8 @@ namespace xSaliceReligionAIO.Champions
             if (target == null)
                 return;
 
-            if (getMarked() != null)
-                target = getMarked();
+            if (GetMarked() != null)
+                target = GetMarked();
 
             if (HasEnergy(Q.IsReady() && useQ, W.IsReady(), E.IsReady() && useE))
             {
@@ -326,24 +321,24 @@ namespace xSaliceReligionAIO.Champions
                     if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - R.LastCastAttemptT > 0 && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
                     {
                         var dist = menu.Item("R_Place_line").GetValue<Slider>().Value;
-                        var BehindVector = Player.ServerPosition - Vector3.Normalize(target.ServerPosition - Player.ServerPosition) * dist;
+                        var behindVector = Player.ServerPosition - Vector3.Normalize(target.ServerPosition - Player.ServerPosition) * dist;
                         Game.PrintChat("dist: " + dist);
 
                         if ((useE && pred.Hitchance >= HitChance.Medium) ||
                             Q.GetPrediction(target).Hitchance >= HitChance.Medium)
                         {
-                            W.Cast(BehindVector);
+                            W.Cast(behindVector);
                             W.LastCastAttemptT = Environment.TickCount + 300;
 
                             if (useQ)
-                                predWQ = Q.GetPrediction(target).UnitPosition;
+                                _predWq = Q.GetPrediction(target).UnitPosition;
                             else
-                                predWQ = Vector3.Zero;
+                                _predWq = Vector3.Zero;
 
                             if (useE)
-                                willEHit = true;
+                                _willEHit = true;
                             else
-                                willEHit = false;
+                                _willEHit = false;
 
                             Utility.DelayAction.Add(400, () => menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" })));
                         }
@@ -354,12 +349,12 @@ namespace xSaliceReligionAIO.Champions
 
         public void CheckShouldSwap()
         {
-            var wHP = menu.Item("useW_Health").GetValue<Slider>().Value;
-            var rHP = menu.Item("useR_Health").GetValue<Slider>().Value;
+            var wHp = menu.Item("useW_Health").GetValue<Slider>().Value;
+            var rHp = menu.Item("useR_Health").GetValue<Slider>().Value;
 
             if (RShadow != null)
             {
-                if (GetHealthPercent() < rHP && rSpell.ToggleState == 2 && countEnemiesNearPosition(RShadow.ServerPosition, 400) < 1)
+                if (GetHealthPercent() < rHp && rSpell.ToggleState == 2 && countEnemiesNearPosition(RShadow.ServerPosition, 400) < 1)
                 {
                     R.Cast(packets());
                     return;
@@ -368,7 +363,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (WShadow != null)
             {
-                if (GetHealthPercent() < wHP && wSpell.ToggleState == 2 && countEnemiesNearPosition(WShadow.ServerPosition, 400) < 1)
+                if (GetHealthPercent() < wHp && wSpell.ToggleState == 2 && countEnemiesNearPosition(WShadow.ServerPosition, 400) < 1)
                     W.Cast(packets());
             }
         }
@@ -398,7 +393,7 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public Obj_AI_Hero getMarked()
+        public Obj_AI_Hero GetMarked()
         {
             return ObjectManager.Get<Obj_AI_Hero>().FirstOrDefault(x => x.IsValidTarget(W.Range + Q.Range) && HasBuff(x, "zedulttargetmark") && x.IsVisible);
         }
@@ -457,8 +452,8 @@ namespace xSaliceReligionAIO.Champions
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
 
-            if (getMarked() != null)
-                target = getMarked();
+            if (GetMarked() != null)
+                target = GetMarked();
 
             if (forceTarget != null)
                 target = forceTarget;
@@ -514,8 +509,8 @@ namespace xSaliceReligionAIO.Champions
         {
             var target = SimpleTs.GetTarget(E.Range + W.Range, SimpleTs.DamageType.Physical);
 
-            if (getMarked() != null)
-                target = getMarked();
+            if (GetMarked() != null)
+                target = GetMarked();
 
             if (forceTarget != null)
                 target = forceTarget;
@@ -568,8 +563,8 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        private Vector3 predWQ;
-        private bool willEHit;
+        private Vector3 _predWq;
+        private bool _willEHit;
 
         public void Cast_W(string source, bool useQ, bool useE)
         {
@@ -578,8 +573,8 @@ namespace xSaliceReligionAIO.Champions
             if (target == null)
                 return;
 
-            if (getMarked() != null)
-                target = getMarked();
+            if (GetMarked() != null)
+                target = GetMarked();
 
             if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
             {
@@ -595,14 +590,14 @@ namespace xSaliceReligionAIO.Champions
                             W.LastCastAttemptT = Environment.TickCount + 500;
 
                             if (useQ)
-                                predWQ = pred.CastPosition;
+                                _predWq = pred.CastPosition;
                             else
-                                predWQ = Vector3.Zero;
+                                _predWq = Vector3.Zero;
 
                             if (useE && pred.UnitPosition.Distance(target.ServerPosition) < E.Range + target.BoundingRadius)
-                                willEHit = true;
+                                _willEHit = true;
                             else
-                                willEHit = false;
+                                _willEHit = false;
                         }
                     }
                 }
@@ -649,8 +644,8 @@ namespace xSaliceReligionAIO.Champions
                                 W.LastCastAttemptT = Environment.TickCount + 500;
                             }
 
-                            predWQ = useQ ? pred.UnitPosition : Vector3.Zero;
-                            willEHit = useE && vec.Distance(target.ServerPosition) < E.Range;
+                            _predWq = useQ ? pred.UnitPosition : Vector3.Zero;
+                            _willEHit = useE && vec.Distance(target.ServerPosition) < E.Range;
                         }
                     }
                 }
@@ -729,42 +724,42 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        private float QCooldown;
+        private float _qCooldown;
         public override void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base unit, GameObjectProcessSpellCastEventArgs args)
         {
             if (!unit.IsMe)
                 return;
 
             if (args.SData.Name == "ZedShuriken")
-                QCooldown = Game.Time + qSpell.Cooldown;
+                _qCooldown = Game.Time + qSpell.Cooldown;
 
             if (args.SData.Name == "ZedShadowDash")
             {
                 if (W.LastCastAttemptT - Environment.TickCount > 0)
                 {
-                    if (predWQ != Vector3.Zero)
+                    if (_predWq != Vector3.Zero)
                     {
-                        Q.Cast(predWQ, packets());
-                        predWQ = Vector3.Zero;
+                        Q.Cast(_predWq, packets());
+                        _predWq = Vector3.Zero;
                     }
 
-                    if (willEHit)
+                    if (_willEHit)
                         E.Cast(packets());
                 }
             }
             if (args.SData.Name == "zedw2")
             {
-                CurrentWShadow = Player.ServerPosition;
+                _currentWShadow = Player.ServerPosition;
             }
 
             if (args.SData.Name == "zedult")
             {
-                CurrentRShadow = Player.ServerPosition;
+                _currentRShadow = Player.ServerPosition;
             }
 
             if (args.SData.Name == "ZedR2")
             {
-                CurrentRShadow = Player.ServerPosition;
+                _currentRShadow = Player.ServerPosition;
             }
         }
 
@@ -772,7 +767,7 @@ namespace xSaliceReligionAIO.Champions
         {
             get
             {
-                if (CurrentWShadow == Vector3.Zero)
+                if (_currentWShadow == Vector3.Zero)
                     return null;
                 if(RShadow != null)
                     return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow" && minion != RShadow && minion.ServerPosition != RShadow.ServerPosition);
@@ -785,12 +780,12 @@ namespace xSaliceReligionAIO.Champions
         {
             get
             {
-                if (CurrentRShadow == Vector3.Zero)
+                if (_currentRShadow == Vector3.Zero)
                     return null;
-                if(CurrentRShadow == Vector3.Zero)
+                if(_currentRShadow == Vector3.Zero)
                     return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow");
 
-                return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow" && minion.Distance(CurrentRShadow) < 200);
+                return ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(minion => minion.IsVisible && minion.IsAlly && minion.Name == "Shadow" && minion.Distance(_currentRShadow) < 200);
             }
         }
 
@@ -802,7 +797,7 @@ namespace xSaliceReligionAIO.Champions
             if (sender.Name == "Zed_Base_W_cloneswap_buf.troy")
             {
                 //Game.PrintChat("W shadow created " + sender.Type);
-                CurrentWShadow = sender.Position;
+                _currentWShadow = sender.Position;
             }
 
             if (sender.Name == "ZedUltMissile")
@@ -823,17 +818,17 @@ namespace xSaliceReligionAIO.Champions
             if (!(sender is Obj_GeneralParticleEmmiter))
                 return;
             
-            if (sender.Name == "Zed_Clone_idle.troy" && CurrentWShadow != Vector3.Zero && WShadow.Distance(sender.Position) < 100)
+            if (sender.Name == "Zed_Clone_idle.troy" && _currentWShadow != Vector3.Zero && WShadow.Distance(sender.Position) < 100)
             {
-                CurrentWShadow = Vector3.Zero;
+                _currentWShadow = Vector3.Zero;
             }
             
 
             if (RShadow != null)
             {
-                if (sender.Name == "Zed_Clone_idle.troy" && CurrentRShadow != Vector3.Zero && RShadow.Distance(sender.Position) < 100)
+                if (sender.Name == "Zed_Clone_idle.troy" && _currentRShadow != Vector3.Zero && RShadow.Distance(sender.Position) < 100)
                 {
-                    CurrentRShadow = Vector3.Zero;
+                    _currentRShadow = Vector3.Zero;
                     //Game.PrintChat("R Deleted");
                 }
             }
