@@ -809,8 +809,6 @@ namespace xSaliceReligionAIO.Champions
 
                     if (_willEHit)
                         E.Cast(packets());
-
-                    xSLxOrbwalker.SetMovement(true);
                 }
             }
             if (args.SData.Name == "zedw2")
