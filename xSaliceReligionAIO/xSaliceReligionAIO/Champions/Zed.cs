@@ -51,7 +51,8 @@ namespace xSaliceReligionAIO.Champions
             {
                 var wMenu = new Menu("WMenu", "WMenu");
                 {
-                    wMenu.AddItem(new MenuItem("W_Require_QE", "Require both Q/W to hit Harass")).SetValue(false);
+                    wMenu.AddItem(new MenuItem("W_Require_QE_Combo", "Require both Q/E to hit on W Harass")).SetValue(true);
+                    wMenu.AddItem(new MenuItem("W_Require_QE", "Require both Q/E to hit on W Harass")).SetValue(true);
                     wMenu.AddItem(new MenuItem("W_Follow_Combo", "Follow W in Combo")).SetValue(false);
                     wMenu.AddItem(new MenuItem("useW_Health", "Use W swap if health below").SetValue(new Slider(25)));
                     spellMenu.AddSubMenu(wMenu);
@@ -586,6 +587,8 @@ namespace xSaliceReligionAIO.Champions
                             if (IsWall(pred.UnitPosition.To2D()))
                                 return;
 
+                            xSLxOrbwalker.SetMovement(false);
+
                             W.Cast(pred.UnitPosition);
                             W.LastCastAttemptT = Environment.TickCount + 500;
 
@@ -620,23 +623,27 @@ namespace xSaliceReligionAIO.Champions
                                 {
                                     if (vec.Distance(target.ServerPosition) < E.Range)
                                     {
+                                        xSLxOrbwalker.SetMovement(false);
                                         W.Cast(vec, true);
                                         W.LastCastAttemptT = Environment.TickCount + 500;
                                     }
                                 }
                                 else
                                 {
+                                    xSLxOrbwalker.SetMovement(false);
                                     W.Cast(vec, true);
                                     W.LastCastAttemptT = Environment.TickCount + 500;
                                 }
                             }
                             else if (useE && vec.Distance(target.ServerPosition) < E.Range + target.BoundingRadius)
                             {
+                                xSLxOrbwalker.SetMovement(false);
                                 W.Cast(vec, true);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
                             }
                             else if (useQ)
                             {
+                                xSLxOrbwalker.SetMovement(false);
                                 W.Cast(vec, true);
                                 W.LastCastAttemptT = Environment.TickCount + 500;
                             }
@@ -749,6 +756,9 @@ namespace xSaliceReligionAIO.Champions
             SmartKs();
             CheckShouldSwap();
 
+            if (W.LastCastAttemptT - Environment.TickCount < 0)
+                xSLxOrbwalker.SetMovement(true);
+
             if (menu.Item("Escape").GetValue<KeyBind>().Active && W.IsReady())
             {
                 var vec = Player.ServerPosition + (Game.CursorPos - Player.ServerPosition)*W.Range;
@@ -799,6 +809,8 @@ namespace xSaliceReligionAIO.Champions
 
                     if (_willEHit)
                         E.Cast(packets());
+
+                    xSLxOrbwalker.SetMovement(true);
                 }
             }
             if (args.SData.Name == "zedw2")
