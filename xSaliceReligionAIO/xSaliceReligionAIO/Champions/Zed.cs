@@ -40,6 +40,7 @@ namespace xSaliceReligionAIO.Champions
                 key.AddItem(new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("N".ToCharArray()[0], KeyBindType.Toggle)));
                 key.AddItem(new MenuItem("LaneClearActive", "Farm!").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
                 key.AddItem(new MenuItem("LastHitQ", "Last hit with Q!").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("Escape", "W To Mouse Escape").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
                 //add to menu
                 menu.AddSubMenu(key);
             }
@@ -217,12 +218,16 @@ namespace xSaliceReligionAIO.Champions
                     if (useW)
                         Cast_W("Combo", useQ, useE);
 
-                    if (!W.IsReady() || wSpell.ToggleState == 2)
+                    if (useW && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
                     {
                         if (useQ)
                         {
                             Cast_Q();
                         }
+                    }
+                    else if (useQ)
+                    {
+                        Cast_Q();
                     }
 
                     if (useE)
