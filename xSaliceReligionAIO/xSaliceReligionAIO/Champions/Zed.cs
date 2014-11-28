@@ -749,7 +749,16 @@ namespace xSaliceReligionAIO.Champions
             SmartKs();
             CheckShouldSwap();
 
-            if (menu.Item("ComboActive").GetValue<KeyBind>().Active)
+            if (menu.Item("Escape").GetValue<KeyBind>().Active && W.IsReady())
+            {
+                var vec = Player.ServerPosition + (Game.CursorPos - Player.ServerPosition)*W.Range;
+
+                if (wSpell.ToggleState == 0)
+                    W.Cast(vec);
+                else if(wSpell.ToggleState == 2)
+                    W.Cast(packets());
+            }
+            else if (menu.Item("ComboActive").GetValue<KeyBind>().Active)
             {
                 Combo();
             }
