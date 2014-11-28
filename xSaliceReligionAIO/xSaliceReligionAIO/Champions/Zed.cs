@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
@@ -26,6 +27,7 @@ namespace xSaliceReligionAIO.Champions
             R = new Spell(SpellSlot.R, 650f);
 
             Q.SetSkillshot(250f, 50f, 1700f, false, SkillshotType.SkillshotLine);
+            W.SetSkillshot(.25f, 270f, float.MaxValue, false, SkillshotType.SkillshotCircle);
             E.SetSkillshot(0f, 270f, float.MaxValue, false, SkillshotType.SkillshotCircle);
         }
 
@@ -89,6 +91,7 @@ namespace xSaliceReligionAIO.Champions
             var farm = new Menu("LaneClear", "LaneClear");
             {
                 farm.AddItem(new MenuItem("UseQFarm", "Use Q").SetValue(true));
+                farm.AddItem(new MenuItem("UseWFarm", "Use W").SetValue(true));
                 farm.AddItem(new MenuItem("UseEFarm", "Use E").SetValue(true));
                 farm.AddItem(new MenuItem("LaneClear_useE_minHit", "Use E if min. hit").SetValue(new Slider(2, 1, 6)));
                 //add to menu
@@ -154,7 +157,7 @@ namespace xSaliceReligionAIO.Champions
             return (float)(comboDamage + Player.GetAutoAttackDamage(target) * 3);
         }
 
-        public double CalcPassive(Obj_AI_Base target)
+        private double CalcPassive(Obj_AI_Base target)
         {
             double dmg = 0;
             
@@ -253,7 +256,7 @@ namespace xSaliceReligionAIO.Champions
 
         private int _coaxDelay;
 
-        public void CoaxCombo(bool useQ, bool useE)
+        private void CoaxCombo(bool useQ, bool useE)
         {
             var target = SimpleTs.GetTarget(W.Range + Q.Range, SimpleTs.DamageType.Physical);
 
@@ -295,7 +298,7 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void LineCombo(bool useQ, bool useE)
+        private void LineCombo(bool useQ, bool useE)
         {
             var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Physical);
             if (target == null)
@@ -330,15 +333,9 @@ namespace xSaliceReligionAIO.Champions
                             W.Cast(behindVector);
                             W.LastCastAttemptT = Environment.TickCount + 300;
 
-                            if (useQ)
-                                _predWq = Q.GetPrediction(target).UnitPosition;
-                            else
-                                _predWq = Vector3.Zero;
+                            _predWq = useQ ? Q.GetPrediction(target).UnitPosition : Vector3.Zero;
 
-                            if (useE)
-                                _willEHit = true;
-                            else
-                                _willEHit = false;
+                            _willEHit = useE;
 
                             Utility.DelayAction.Add(400, () => menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" })));
                         }
@@ -347,7 +344,7 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void CheckShouldSwap()
+        private void CheckShouldSwap()
         {
             var wHp = menu.Item("useW_Health").GetValue<Slider>().Value;
             var rHp = menu.Item("useR_Health").GetValue<Slider>().Value;
@@ -393,12 +390,12 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public Obj_AI_Hero GetMarked()
+        private Obj_AI_Hero GetMarked()
         {
             return ObjectManager.Get<Obj_AI_Hero>().FirstOrDefault(x => x.IsValidTarget(W.Range + Q.Range) && HasBuff(x, "zedulttargetmark") && x.IsVisible);
         }
 
-        public void SmartKs()
+        private void SmartKs()
         {
             if (!menu.Item("smartKS").GetValue<bool>())
                 return;
@@ -448,7 +445,7 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void Cast_Q(Obj_AI_Hero forceTarget = null)
+        private void Cast_Q(Obj_AI_Hero forceTarget = null)
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
 
@@ -505,7 +502,7 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void Cast_E(Obj_AI_Hero forceTarget = null)
+        private void Cast_E(Obj_AI_Hero forceTarget = null)
         {
             var target = SimpleTs.GetTarget(E.Range + W.Range, SimpleTs.DamageType.Physical);
 
@@ -566,7 +563,7 @@ namespace xSaliceReligionAIO.Champions
         private Vector3 _predWq;
         private bool _willEHit;
 
-        public void Cast_W(string source, bool useQ, bool useE)
+        private void Cast_W(string source, bool useQ, bool useE)
         {
             var target = SimpleTs.GetTarget(Q.Range + W.Range, SimpleTs.DamageType.Physical);
 
@@ -576,7 +573,7 @@ namespace xSaliceReligionAIO.Champions
             if (GetMarked() != null)
                 target = GetMarked();
 
-            if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping)
+            if (wSpell.ToggleState == 0 && W.IsReady() && Environment.TickCount - W.LastCastAttemptT > 0)
             {
                 if (Player.Distance(target) < W.Range + target.BoundingRadius)
                 {
@@ -586,18 +583,19 @@ namespace xSaliceReligionAIO.Champions
                     {
                         if ((pred.Hitchance >= HitChance.Medium && Q.GetPrediction(target).Hitchance >= HitChance.Medium))
                         {
+                            if (IsWall(pred.UnitPosition.To2D()))
+                                return;
+
                             W.Cast(pred.UnitPosition);
                             W.LastCastAttemptT = Environment.TickCount + 500;
 
-                            if (useQ)
-                                _predWq = pred.CastPosition;
-                            else
-                                _predWq = Vector3.Zero;
+                            _predWq = useQ ? pred.CastPosition : Vector3.Zero;
 
                             if (useE && pred.UnitPosition.Distance(target.ServerPosition) < E.Range + target.BoundingRadius)
                                 _willEHit = true;
                             else
                                 _willEHit = false;
+
                         }
                     }
                 }
@@ -609,7 +607,6 @@ namespace xSaliceReligionAIO.Champions
 
                     if (IsWall(vec.To2D()))
                         return;
-
 
                     if ((!useQ || Q.IsReady()) && (!useE || E.IsReady()))
                     {
@@ -652,7 +649,45 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public bool HasEnergy(bool q, bool w, bool e)
+        private void Farm()
+        {
+            List<Obj_AI_Base> allMinionsQ = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly);
+            List<Obj_AI_Base> allMinionsW = MinionManager.GetMinions(Player.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly);
+            List<Obj_AI_Base> allMinionsE = MinionManager.GetMinions(Player.ServerPosition, E.Range, MinionTypes.All, MinionTeam.NotAlly);
+
+            var useQ = menu.Item("UseQFarm").GetValue<bool>();
+            var useW = menu.Item("UseWFarm").GetValue<bool>();
+            var useE = menu.Item("UseEFarm").GetValue<bool>();
+
+            if (useW && wSpell.ToggleState == 0 && W.IsReady())
+            {
+                var pred = W.GetCircularFarmLocation(allMinionsW);
+
+                if (pred.MinionsHit > 2)
+                {
+                    W.Cast(pred.Position);
+                    return;
+                }
+            }
+
+            if (useQ && Q.IsReady())
+            {
+                var pred = Q.GetLineFarmLocation(allMinionsQ);
+
+                if (pred.MinionsHit > 2)
+                    Q.Cast(pred.Position);
+            }
+
+            if (useE && E.IsReady())
+            {
+                var pred = E.GetCircularFarmLocation(allMinionsE);
+
+                if (pred.MinionsHit > menu.Item("LaneClear_useE_minHit").GetValue<Slider>().Value)
+                    E.Cast(packets());
+            }
+        }
+
+        private bool HasEnergy(bool q, bool w, bool e)
         {
             float energy = Player.Mana;
             float totalEnergy = 0;
@@ -713,8 +748,8 @@ namespace xSaliceReligionAIO.Champions
                 //if (menu.Item("LastHitQ").GetValue<KeyBind>().Active)
                    // Cast_Q(false);
 
-                //if (menu.Item("LaneClearActive").GetValue<KeyBind>().Active)
-                    //Farm();
+                if (menu.Item("LaneClearActive").GetValue<KeyBind>().Active)
+                    Farm();
 
                 if (menu.Item("HarassActiveT").GetValue<KeyBind>().Active)
                     Harass();
