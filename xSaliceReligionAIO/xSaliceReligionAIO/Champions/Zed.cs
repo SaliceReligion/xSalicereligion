@@ -40,6 +40,8 @@ namespace xSaliceReligionAIO.Champions
                 key.AddItem(new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("N".ToCharArray()[0], KeyBindType.Toggle)));
                 key.AddItem(new MenuItem("LaneClearActive", "Farm!").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
                 key.AddItem(new MenuItem("LastHitQ", "Last hit with Q!").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("Switch_1", "Line Mode").SetValue(new KeyBind("U".ToCharArray()[0], KeyBindType.Press)));
+                key.AddItem(new MenuItem("Switch_2", "Coax Mode").SetValue(new KeyBind("I".ToCharArray()[0], KeyBindType.Press)));
                 key.AddItem(new MenuItem("Escape", "W To Mouse Escape").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
                 //add to menu
                 menu.AddSubMenu(key);
@@ -704,6 +706,20 @@ namespace xSaliceReligionAIO.Champions
         {
             int mode = menu.Item("Combo_mode").GetValue<StringList>().SelectedIndex;
             int lasttime = Environment.TickCount - _lasttick;
+
+            if (menu.Item("Switch_1").GetValue<KeyBind>().Active && lasttime > Game.Ping)
+            {
+                menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }, 1));
+                _lasttick = Environment.TickCount + 300;
+                return;
+            }
+
+            if (menu.Item("Switch_2").GetValue<KeyBind>().Active && lasttime > Game.Ping)
+            {
+                menu.Item("Combo_mode").SetValue(new StringList(new[] { "Normal", "Line Combo", "Coax" }, 2));
+                _lasttick = Environment.TickCount + 300;
+                return;
+            }
 
             if (menu.Item("Combo_Switch").GetValue<KeyBind>().Active && lasttime > Game.Ping)
             {
