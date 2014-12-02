@@ -379,8 +379,8 @@ namespace xSaliceReligionAIO.Champions
                     {
                         int hit = 2;
 
-                        var targetPred = Prediction.GetPrediction(target, .75f);
-                        var enemyPred = Prediction.GetPrediction(enemy, .75f);
+                        var targetPred = Prediction.GetPrediction(target, .25f);
+                        var enemyPred = Prediction.GetPrediction(enemy, .25f);
 
                         var midpoint = (enemyPred.CastPosition + targetPred.CastPosition)/2;
 
@@ -391,7 +391,7 @@ namespace xSaliceReligionAIO.Champions
                         //loop 3
                             foreach (var enemy2 in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(R.Range + 1000) && x.NetworkId != target.NetworkId &&  x.NetworkId != enemy.NetworkId && x.Distance(target) < 1000))
                             {
-                                var enemy2Pred = Prediction.GetPrediction(enemy2, .75f);
+                                var enemy2Pred = Prediction.GetPrediction(enemy2, .25f);
 
                                 Object[] obj = VectorPointProjectionOnLineSegment(startpos.To2D(), endPos.To2D(), enemy2Pred.CastPosition.To2D());
                                 var isOnseg = (bool) obj[2];
