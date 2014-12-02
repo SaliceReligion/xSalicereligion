@@ -387,7 +387,7 @@ namespace xSaliceReligionAIO.Champions
                         var startpos = midpoint + Vector3.Normalize(enemyPred.CastPosition - targetPred.CastPosition)*600;
                         var endPos = midpoint - Vector3.Normalize(enemyPred.CastPosition - targetPred.CastPosition)*600;
 
-                        if (!IsWall(startpos.To2D()) && !IsWall(endPos.To2D())) { 
+                        if (!IsWall(startpos.To2D()) && !IsWall(endPos.To2D()) && countEnemiesNearPosition(Player.ServerPosition, R.Range + 1000) > 2) { 
                         //loop 3
                             foreach (var enemy2 in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(R.Range + 1000) && x.NetworkId != target.NetworkId &&  x.NetworkId != enemy.NetworkId && x.Distance(target) < 1000))
                             {
