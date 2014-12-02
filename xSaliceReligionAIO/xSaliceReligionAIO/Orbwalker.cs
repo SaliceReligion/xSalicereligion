@@ -573,7 +573,7 @@ namespace xSaliceReligionAIO
         {
             var ret = offset;
             if (MyHero.ChampionName == "Azir")
-                ret += 125;
+                ret += 50;
             return Menu.Item("orb_Misc_Farmdelay").GetValue<Slider>().Value + ret;
         }
 

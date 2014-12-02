@@ -128,13 +128,23 @@ namespace xSaliceReligionAIO.Champions
                 drawMenu.AddItem(new MenuItem("Draw_R_Killable", "Draw R Mark on Killable").SetValue(true));
 
                 MenuItem drawComboDamageMenu = new MenuItem("Draw_ComboDamage", "Draw Combo Damage").SetValue(true);
+                MenuItem drawFill = new MenuItem("Draw_Fill", "Draw Combo Damage Fill").SetValue(new Circle(true, Color.FromArgb(90, 255, 169, 4)));
                 drawMenu.AddItem(drawComboDamageMenu);
-                Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
-                Utility.HpBarDamageIndicator.Enabled = drawComboDamageMenu.GetValue<bool>();
+                drawMenu.AddItem(drawFill);
+                DamageIndicator.DamageToUnit = GetComboDamage;
+                DamageIndicator.Enabled = drawComboDamageMenu.GetValue<bool>();
+                DamageIndicator.Fill = drawFill.GetValue<Circle>().Active;
+                DamageIndicator.FillColor = drawFill.GetValue<Circle>().Color;
                 drawComboDamageMenu.ValueChanged +=
                     delegate(object sender, OnValueChangeEventArgs eventArgs)
                     {
-                        Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+                        DamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+                    };
+                drawFill.ValueChanged +=
+                    delegate(object sender, OnValueChangeEventArgs eventArgs)
+                    {
+                        DamageIndicator.Fill = eventArgs.GetNewValue<Circle>().Active;
+                        DamageIndicator.FillColor = eventArgs.GetNewValue<Circle>().Color;
                     };
                 //add to menu
                 menu.AddSubMenu(drawMenu);

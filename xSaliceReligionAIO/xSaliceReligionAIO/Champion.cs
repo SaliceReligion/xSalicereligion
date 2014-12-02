@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
+using Microsoft.Win32.SafeHandles;
 using SharpDX;
 
 namespace xSaliceReligionAIO
@@ -19,7 +20,14 @@ namespace xSaliceReligionAIO
             GameObject.OnCreate += GameObject_OnCreate;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             Game.OnGameSendPacket += Game_OnSendPacket;
+            Game.OnGameProcessPacket += Game_OnGameProcessPacket;
             GameObject.OnDelete += GameObject_OnDelete;
+
+            if (menu.Item("Orbwalker_Mode").GetValue<bool>())
+                Orbwalking.AfterAttack += AfterAttack;
+            else
+                xSLxOrbwalker.AfterAttack += AfterAttack;
+            
         }
 
         public Champion(bool load)
@@ -39,11 +47,13 @@ namespace xSaliceReligionAIO
         public List<Spell> SpellList = new List<Spell>();
 
         public Spell Q;
+        public Spell QExtend;
         public Spell W;
         public Spell E;
         public Spell R;
         public Spell _r2;
         public SpellDataInst qSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Q);
+        public SpellDataInst eSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.E);
         public SpellDataInst wSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.W);
         public SpellDataInst rSpell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.R);
 
@@ -86,7 +96,7 @@ namespace xSaliceReligionAIO
             menu.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker submenu
-            orbwalkerMenu.AddItem(new MenuItem("Orbwalker_Mode", "Change Orbwalker").SetValue(true));
+            orbwalkerMenu.AddItem(new MenuItem("Orbwalker_Mode", "Change Orbwalker").SetValue(false));
             menu.AddSubMenu(orbwalkerMenu);
             chooseOrbwalker(menu.Item("Orbwalker_Mode").GetValue<bool>());
 
@@ -111,6 +121,13 @@ namespace xSaliceReligionAIO
 
         public void chooseOrbwalker(bool mode)
         {
+            if (Player.ChampionName == "Azir")
+            {
+                xSLxOrbwalker.AddToMenu(orbwalkerMenu);
+                Game.PrintChat("xSLx Orbwalker Loaded");
+                return;
+            }
+
             if (mode)
             {
                 Orbwalker = new Orbwalking.Orbwalker(orbwalkerMenu);
@@ -195,9 +212,9 @@ namespace xSaliceReligionAIO
         public bool IsPassWall(Vector3 start, Vector3 end)
         {
             double count = Vector3.Distance(start, end);
-            for (uint i = 0; i <= count; i += 10)
+            for (uint i = 0; i <= count; i += 25)
             {
-                Vector2 pos = V2E(start, end, i);
+                Vector2 pos = start.To2D().Extend(Player.ServerPosition.To2D(), -i);
                 if (IsWall(pos))
                     return true;
             }
@@ -353,12 +370,41 @@ namespace xSaliceReligionAIO
                 spell.Cast(target, packets());
         }
 
+        public void CastBasicFarm(Spell spell)
+        {
+            if(!spell.IsReady())
+				return;
+            var minion = MinionManager.GetMinions(Player.ServerPosition, spell.Range, MinionTypes.All, MinionTeam.NotAlly);
+
+            if (minion.Count == 0)
+                return;
+
+            if (spell.Type == SkillshotType.SkillshotCircle)
+            {
+                var predPosition = spell.GetCircularFarmLocation(minion);
+
+                spell.UpdateSourcePosition();
+
+                if (predPosition.MinionsHit >= 2)
+                    spell.Cast(predPosition.Position, packets());
+            }
+            else if (spell.Type == SkillshotType.SkillshotLine)
+            {
+                var predPosition = spell.GetLineFarmLocation(minion);
+
+                spell.UpdateSourcePosition();
+
+                if(predPosition.MinionsHit >= 2)
+                    spell.Cast(predPosition.Position, packets());
+            }
+        }
+
         public Obj_AI_Hero GetTargetFocus(float range)
         {
             var focusSelected = menu.Item("selected").GetValue<bool>();
 
             if (SimpleTs.GetSelectedTarget() != null)
-                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < range && SimpleTs.GetSelectedTarget().Type == GameObjectType.obj_AI_Hero)
+                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < range + 100 && SimpleTs.GetSelectedTarget().Type == GameObjectType.obj_AI_Hero)
                 {
                     //Game.PrintChat("Focusing: " + SimpleTs.GetSelectedTarget().Name);
                     return SimpleTs.GetSelectedTarget();
@@ -461,6 +507,16 @@ namespace xSaliceReligionAIO
         }
 
         public virtual void Game_OnSendPacket(GamePacketEventArgs args)
+        {
+            //for champ use
+        }
+
+        public virtual void Game_OnGameProcessPacket(GamePacketEventArgs args)
+        {
+            //for champ use
+        }
+
+        public virtual void AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
         {
             //for champ use
         }

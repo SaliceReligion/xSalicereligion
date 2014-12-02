@@ -68,6 +68,7 @@ namespace xSaliceReligionAIO.Champions
 
             var combo = new Menu("Combo", "Combo");
             {
+                combo.AddItem(new MenuItem("selected", "Focus Selected Target").SetValue(true));
                 combo.AddItem(new MenuItem("Combo_mode", "Combo Mode").SetValue(new StringList(new[] { "Normal", "Q-R-AA-Q-E", "Q-Q-R-E-AA" })));
                 combo.AddItem(new MenuItem("Combo_Switch", "Switch mode Key").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
                 combo.AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
@@ -103,14 +104,26 @@ namespace xSaliceReligionAIO.Champions
                 drawMenu.AddItem(new MenuItem("Draw_R", "Draw R").SetValue(true));
                 drawMenu.AddItem(new MenuItem("Current_Mode", "Draw current Mode").SetValue(true));
 
-                var drawComboDamageMenu = new MenuItem("Draw_ComboDamage", "Draw Combo Damage").SetValue(true);
+                MenuItem drawComboDamageMenu = new MenuItem("Draw_ComboDamage", "Draw Combo Damage").SetValue(true);
+                MenuItem drawFill = new MenuItem("Draw_Fill", "Draw Combo Damage Fill").SetValue(new Circle(true, Color.FromArgb(90, 255, 169, 4)));
                 drawMenu.AddItem(drawComboDamageMenu);
-                Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
-                Utility.HpBarDamageIndicator.Enabled = drawComboDamageMenu.GetValue<bool>();
-                drawComboDamageMenu.ValueChanged += delegate(object sender, OnValueChangeEventArgs eventArgs)
-                {
-                    Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
-                };
+                drawMenu.AddItem(drawFill);
+                DamageIndicator.DamageToUnit = GetComboDamage;
+                DamageIndicator.Enabled = drawComboDamageMenu.GetValue<bool>();
+                DamageIndicator.Fill = drawFill.GetValue<Circle>().Active;
+                DamageIndicator.FillColor = drawFill.GetValue<Circle>().Color;
+                drawComboDamageMenu.ValueChanged +=
+                    delegate(object sender, OnValueChangeEventArgs eventArgs)
+                    {
+                        DamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+                    };
+                drawFill.ValueChanged +=
+                    delegate(object sender, OnValueChangeEventArgs eventArgs)
+                    {
+                        DamageIndicator.Fill = eventArgs.GetNewValue<Circle>().Active;
+                        DamageIndicator.FillColor = eventArgs.GetNewValue<Circle>().Color;
+                    };
+
                 //add to menu
                 menu.AddSubMenu(drawMenu);
             }
@@ -262,6 +275,12 @@ namespace xSaliceReligionAIO.Champions
             if (combo)
             {
                 var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+
+                //focus target
+                float range = Q.Range;
+                if (GetTargetFocus(range) != null)
+                    target = GetTargetFocus(range);
+
                 if (!target.IsValidTarget(Q.Range))
                     return;
 
@@ -322,6 +341,11 @@ namespace xSaliceReligionAIO.Champions
             if (combo)
             {
                 var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+
+                float range = E.Range;
+                if (GetTargetFocus(range) != null)
+                    target = GetTargetFocus(range);
+
                 if (target == null || !target.IsValidTarget(E.Range))
                     return;
 
@@ -388,6 +412,11 @@ namespace xSaliceReligionAIO.Champions
         private void Cast_R(int mode)
         {
             var target = SimpleTs.GetTarget(R.Range + Player.BoundingRadius, SimpleTs.DamageType.Magical);
+
+            float range = R.Range + Player.BoundingRadius;
+            if (GetTargetFocus(range) != null)
+                target = GetTargetFocus(range);
+
             if (target == null)
                 return;
 

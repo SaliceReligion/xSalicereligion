@@ -30,7 +30,7 @@ namespace xSaliceReligionAIO.Champions
             
         }
 
-        public void SetUpSpells()
+        private void SetUpSpells()
         {
             //intalize spell
             Q = new Spell(SpellSlot.Q, 900);
@@ -38,8 +38,8 @@ namespace xSaliceReligionAIO.Champions
             E = new Spell(SpellSlot.E, 875);
             R = new Spell(SpellSlot.R, 850);
 
-            Q.SetSkillshot(0.5f, 100, 1100, false, SkillshotType.SkillshotLine);
-            E.SetSkillshot(0.5f, 60, 1200, true, SkillshotType.SkillshotLine);
+            Q.SetSkillshot(0.25f, 100, 1600, false, SkillshotType.SkillshotLine);
+            E.SetSkillshot(0.25f, 60, 1200, true, SkillshotType.SkillshotLine);
 
             SpellList.Add(Q);
             SpellList.Add(W);
@@ -48,7 +48,7 @@ namespace xSaliceReligionAIO.Champions
         }
 
         //Load Menu
-        public void LoadMenu()
+        private void LoadMenu()
         {
             //key
             var key = new Menu("Key", "Key");{
@@ -72,7 +72,7 @@ namespace xSaliceReligionAIO.Champions
                 combo.AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
                 combo.AddItem(new MenuItem("rSpeed", "Use All R fast Duel").SetValue(true));
                 combo.AddItem(new MenuItem("ignite", "Use Ignite").SetValue(true));
-                combo.AddItem(new MenuItem("igniteMode", "Mode").SetValue(new StringList(new[] { "Combo", "KS" })));
+                combo.AddItem(new MenuItem("igniteMode", "Ignite Mode").SetValue(new StringList(new[] { "Combo", "KS" })));
                 //add to menu
                 menu.AddSubMenu(combo);
             }
@@ -106,18 +106,10 @@ namespace xSaliceReligionAIO.Champions
                 misc.AddItem(new MenuItem("dfgCharm", "Require Charmed to DFG").SetValue(true));
                 misc.AddItem(new MenuItem("EQ", "Use Q onTop of E").SetValue(true));
                 misc.AddItem(new MenuItem("smartKS", "Smart KS").SetValue(true));
+                misc.AddItem(new MenuItem("Prediction_Check_Off", "Use Prediciton Mode 2").SetValue(false));
                 //add to menu
                 menu.AddSubMenu(misc);
             }
-            //Damage after combo:
-            MenuItem dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
-            Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
-            Utility.HpBarDamageIndicator.Enabled = dmgAfterComboItem.GetValue<bool>();
-            dmgAfterComboItem.ValueChanged +=
-                delegate(object sender, OnValueChangeEventArgs eventArgs)
-                {
-                    Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
-                };
 
             //Drawings menu:
             var drawing = new Menu("Drawings", "Drawings");
@@ -134,7 +126,26 @@ namespace xSaliceReligionAIO.Champions
                         new MenuItem("cursor", "Draw R Dash Range").SetValue(new Circle(false,Color.FromArgb(100, 255, 0, 255))));
                 drawing.AddItem(
                         new MenuItem("Draw_Mode", "Draw E Mode").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-                drawing.AddItem(dmgAfterComboItem);
+
+                MenuItem drawComboDamageMenu = new MenuItem("Draw_ComboDamage", "Draw Combo Damage").SetValue(true);
+                MenuItem drawFill = new MenuItem("Draw_Fill", "Draw Combo Damage Fill").SetValue(new Circle(true, Color.FromArgb(90, 255, 169, 4)));
+                drawing.AddItem(drawComboDamageMenu);
+                drawing.AddItem(drawFill);
+                DamageIndicator.DamageToUnit = GetComboDamage;
+                DamageIndicator.Enabled = drawComboDamageMenu.GetValue<bool>();
+                DamageIndicator.Fill = drawFill.GetValue<Circle>().Active;
+                DamageIndicator.FillColor = drawFill.GetValue<Circle>().Color;
+                drawComboDamageMenu.ValueChanged +=
+                    delegate(object sender, OnValueChangeEventArgs eventArgs)
+                    {
+                        DamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+                    };
+                drawFill.ValueChanged +=
+                    delegate(object sender, OnValueChangeEventArgs eventArgs)
+                    {
+                        DamageIndicator.Fill = eventArgs.GetNewValue<Circle>().Active;
+                        DamageIndicator.FillColor = eventArgs.GetNewValue<Circle>().Color;
+                    };
                 menu.AddSubMenu(drawing);
             }
         }
@@ -208,12 +219,12 @@ namespace xSaliceReligionAIO.Champions
 
             Obj_AI_Hero rETarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
 
-            int igniteMode;
-            igniteMode = menu.Item("igniteMode").GetValue<StringList>().SelectedIndex;
+            int igniteMode = menu.Item("igniteMode").GetValue<StringList>().SelectedIndex;
 
             var hitC = GetHitchance(source);
             var dmg = GetComboDamage(eTarget);
-
+            var predOff = menu.Item("Prediction_Check_Off").GetValue<bool>();
+                
             //DFG
             if (eTarget != null && dmg > eTarget.Health - 300 && DFG.IsReady() && source == "Combo" && Player.Distance(eTarget) <= 750 &&
                 (eTarget.HasBuffOfType(BuffType.Charm) || !menu.Item("dfgCharm").GetValue<bool>()))
@@ -222,15 +233,17 @@ namespace xSaliceReligionAIO.Champions
             }
 
             //E
-            if (useE && eTarget != null && E.IsReady() && Player.Distance(eTarget) < E.Range &&
-                E.GetPrediction(eTarget).Hitchance >= hitC)
+            if (useE && eTarget != null && E.IsReady() && Player.Distance(eTarget) < E.Range)
             {
-                E.Cast(eTarget, packets());
-                if (menu.Item("EQ").GetValue<bool>() && Q.IsReady())
+                if (E.GetPrediction(eTarget).Hitchance >= hitC || predOff)
                 {
-                    Q.Cast(eTarget, packets());
+                    E.Cast(eTarget, packets());
+                    if (menu.Item("EQ").GetValue<bool>() && Q.IsReady())
+                    {
+                        Q.Cast(eTarget, packets());
+                    }
+                    return;
                 }
-                return;
             }
 
             //Ignite
@@ -248,12 +261,13 @@ namespace xSaliceReligionAIO.Champions
             {
                 W.Cast();
             }
+
             if (source == "Harass" && menu.Item("longQ").GetValue<bool>())
             {
                 if (useQ && Q.IsReady() && Player.Distance(eTarget) <= Q.Range && eTarget != null &&
                     ShouldQ(eTarget, source) && Player.Distance(eTarget) > 600)
                 {
-                    if (Q.GetPrediction(eTarget).Hitchance >= hitC)
+                    if (Q.GetPrediction(eTarget).Hitchance >= hitC || predOff)
                     {
                         Q.Cast(eTarget, packets(), true);
                         return;
@@ -263,7 +277,7 @@ namespace xSaliceReligionAIO.Champions
             else if (useQ && Q.IsReady() && Player.Distance(eTarget) <= Q.Range && eTarget != null &&
                      ShouldQ(eTarget, source))
             {
-                if (Q.GetPrediction(eTarget).Hitchance >= hitC)
+                if (Q.GetPrediction(eTarget).Hitchance >= hitC || predOff)
                 {
                     Q.Cast(eTarget, packets(), true);
                     return;
@@ -290,9 +304,10 @@ namespace xSaliceReligionAIO.Champions
                 }
             }
         }
-        public void CheckKs()
+
+        private void CheckKs()
         {
-            foreach (Obj_AI_Hero target in ObjectManager.Get<Obj_AI_Hero>().Where(x => Player.Distance(x) < 1300 && x.IsValidTarget() && x.IsEnemy && !x.IsDead))
+            foreach (Obj_AI_Hero target in ObjectManager.Get<Obj_AI_Hero>().Where(x => Player.IsValidTarget(1300) && x.IsEnemy && !x.IsDead).OrderByDescending(GetComboDamage))
             {
                 if (target != null)
                 {
@@ -375,7 +390,7 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public bool ShouldQ(Obj_AI_Hero target, string source)
+        private bool ShouldQ(Obj_AI_Hero target, string source)
         {
             if (source == "Combo")
             {
@@ -411,7 +426,8 @@ namespace xSaliceReligionAIO.Champions
 
             return false;
         }
-        public bool ShouldW(Obj_AI_Hero target, string source)
+
+        private bool ShouldW(Obj_AI_Hero target, string source)
         {
             if (source == "Combo")
             {
@@ -445,7 +461,7 @@ namespace xSaliceReligionAIO.Champions
             return false;
         }
 
-        public bool ShouldR(Obj_AI_Hero target)
+        private bool ShouldR(Obj_AI_Hero target)
         {
             if (!manaCheck())
                 return false;
@@ -478,7 +494,7 @@ namespace xSaliceReligionAIO.Champions
             return false;
         }
 
-        public bool CheckReq(Obj_AI_Hero target)
+        private bool CheckReq(Obj_AI_Hero target)
         {
             if (Player.Distance(Game.CursorPos) < 75)
                 return false;
@@ -493,7 +509,7 @@ namespace xSaliceReligionAIO.Champions
                     //Game.PrintChat("added delay: " + addedDelay);
 
                     PredictionOutput pred = GetP(Game.CursorPos, E, target, addedDelay, false);
-                    if (pred.Hitchance >= HitChance.High && R.IsReady())
+                    if (pred.Hitchance >= HitChance.Medium && R.IsReady())
                     {
                         //Game.PrintChat("R-E Mode Intiate!");
                         R.Cast(Game.CursorPos, packets());
@@ -505,12 +521,13 @@ namespace xSaliceReligionAIO.Champions
 
             return false;
         }
-        public bool IsRActive()
+
+        private bool IsRActive()
         {
             return Player.HasBuff("AhriTumble", true);
         }
 
-        public int RCount()
+        private int RCount()
         {
             var buff = Player.Buffs.FirstOrDefault(x => x.Name == "AhriTumble");
             if (buff != null)
@@ -587,10 +604,8 @@ namespace xSaliceReligionAIO.Champions
             {
                 var wts = Drawing.WorldToScreen(Player.Position);
 
-                if(menu.Item("charmCombo").GetValue<KeyBind>().Active)
-                    Drawing.DrawText(wts[0], wts[1], Color.White, "Require E: On");
-                else
-                    Drawing.DrawText(wts[0], wts[1], Color.White, "Require E: Off");
+                Drawing.DrawText(wts[0], wts[1], Color.White,
+                    menu.Item("charmCombo").GetValue<KeyBind>().Active ? "Require E: On" : "Require E: Off");
             }
         }
 
@@ -608,7 +623,7 @@ namespace xSaliceReligionAIO.Champions
 
             if (Player.Distance(unit) < E.Range && unit != null)
             {
-                if (E.GetPrediction(unit).Hitchance >= HitChance.High && E.IsReady())
+                if (E.GetPrediction(unit).Hitchance >= HitChance.Medium && E.IsReady())
                     E.Cast(unit, packets());
             }
         }

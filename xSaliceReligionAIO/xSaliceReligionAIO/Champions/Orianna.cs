@@ -11,10 +11,10 @@ namespace xSaliceReligionAIO.Champions
     class Orianna : Champion
     {
         //ball manager
-        public bool IsBallMoving;
-        public Vector3 CurrentBallPosition;
-        public Vector3 AllyDraw;
-        public int BallStatus;
+        private bool _isBallMoving;
+        private Vector3 _currentBallPosition;
+        private Vector3 _allyDraw;
+        private int _ballStatus;
 
         public Orianna()
         {
@@ -218,7 +218,7 @@ namespace xSaliceReligionAIO.Champions
                 CastQ(target, source);
             }
 
-            if (IsBallMoving)
+            if (_isBallMoving)
                 return;
 
             if (useW && target != null && W.IsReady())
@@ -261,8 +261,9 @@ namespace xSaliceReligionAIO.Champions
                 if (!(menu.Item("killR").GetValue<KeyBind>().Active)) //check if multi
                 {
                     if (menu.Item("overK").GetValue<bool>() &&
-                        (Player.GetSpellDamage(target, SpellSlot.Q) * 2) >= target.Health)
+                        (Player.GetSpellDamage(target, SpellSlot.Q) + Player.GetAutoAttackDamage(target)) >= target.Health)
                     {
+                        return;
                     }
                     if (GetComboDamage(target) >= target.Health - 100)
                         CastR(target);
@@ -270,38 +271,38 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void CastW(Obj_AI_Base target)
+        private void CastW(Obj_AI_Base target)
         {
-            if (IsBallMoving) return;
+            if (_isBallMoving) return;
 
-            PredictionOutput prediction = GetPCircle(CurrentBallPosition, W, target, true);
+            PredictionOutput prediction = GetPCircle(_currentBallPosition, W, target, true);
 
-            if (W.IsReady() && prediction.UnitPosition.Distance(CurrentBallPosition) < W.Width)
+            if (W.IsReady() && prediction.UnitPosition.Distance(_currentBallPosition) < W.Width)
             {
                 W.Cast();
             }
 
         }
 
-        public void CastR(Obj_AI_Base target)
+        private void CastR(Obj_AI_Base target)
         {
-            if (IsBallMoving) return;
+            if (_isBallMoving) return;
 
-            PredictionOutput prediction = GetPCircle(CurrentBallPosition, R, target, true);
+            PredictionOutput prediction = GetPCircle(_currentBallPosition, R, target, true);
 
-            if (R.IsReady() && prediction.UnitPosition.Distance(CurrentBallPosition) <= R.Width)
+            if (R.IsReady() && prediction.UnitPosition.Distance(_currentBallPosition) <= R.Width)
             {
                 R.Cast();
             }
         }
 
-        public void CastE(Obj_AI_Base target)
+        private void CastE(Obj_AI_Base target)
         {
-            if (IsBallMoving) return;
+            if (_isBallMoving) return;
 
             Obj_AI_Hero etarget = Player;
 
-            switch (BallStatus)
+            switch (_ballStatus)
             {
                 case 0:
                     if (target != null)
@@ -355,8 +356,8 @@ namespace xSaliceReligionAIO.Champions
                     //dmg enemy with E
                     if (menu.Item("UseEDmg").GetValue<bool>())
                     {
-                        PredictionOutput prediction = GetP(CurrentBallPosition, E, target, true);
-                        Object[] obj = VectorPointProjectionOnLineSegment(CurrentBallPosition.To2D(),
+                        PredictionOutput prediction = GetP(_currentBallPosition, E, target, true);
+                        Object[] obj = VectorPointProjectionOnLineSegment(_currentBallPosition.To2D(),
                             Player.ServerPosition.To2D(), prediction.UnitPosition.To2D());
                         var isOnseg = (bool)obj[2];
                         var pointLine = (Vector2)obj[1];
@@ -369,9 +370,9 @@ namespace xSaliceReligionAIO.Champions
                         }
                     }
 
-                    float travelTime2 = target.Distance(CurrentBallPosition) / Q.Speed;
+                    float travelTime2 = target.Distance(_currentBallPosition) / Q.Speed;
                     float minTravelTime2 = target.Distance(Player.ServerPosition) / Q.Speed +
-                                            Player.Distance(CurrentBallPosition) / E.Speed;
+                                            Player.Distance(_currentBallPosition) / E.Speed;
 
                     if (minTravelTime2 < travelTime2 && target.Distance(Player.ServerPosition) <= Q.Range + Q.Width &&
                         E.IsReady())
@@ -381,7 +382,7 @@ namespace xSaliceReligionAIO.Champions
 
                     break;
                 case 2:
-                    float travelTime3 = target.Distance(CurrentBallPosition) / Q.Speed;
+                    float travelTime3 = target.Distance(_currentBallPosition) / Q.Speed;
                     float minTravelTime3 = 10000f;
 
                     foreach (
@@ -394,8 +395,8 @@ namespace xSaliceReligionAIO.Champions
                             //dmg enemy with E
                             if (menu.Item("UseEDmg").GetValue<bool>())
                             {
-                                PredictionOutput prediction2 = GetP(CurrentBallPosition, E, target, true);
-                                Object[] obj = VectorPointProjectionOnLineSegment(CurrentBallPosition.To2D(),
+                                PredictionOutput prediction2 = GetP(_currentBallPosition, E, target, true);
+                                Object[] obj = VectorPointProjectionOnLineSegment(_currentBallPosition.To2D(),
                                     ally.ServerPosition.To2D(), prediction2.UnitPosition.To2D());
                                 var isOnseg = (bool)obj[2];
                                 var pointLine = (Vector2)obj[1];
@@ -410,7 +411,7 @@ namespace xSaliceReligionAIO.Champions
                             }
 
                             float allyRange2 = target.Distance(ally.ServerPosition) / Q.Speed +
-                                                ally.Distance(CurrentBallPosition) / E.Speed;
+                                                ally.Distance(_currentBallPosition) / E.Speed;
 
                             if (allyRange2 < minTravelTime3)
                             {
@@ -430,11 +431,11 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void CastQ(Obj_AI_Base target, String source)
+        private void CastQ(Obj_AI_Base target, String source)
         {
-            if (IsBallMoving) return;
+            if (_isBallMoving) return;
 
-            PredictionOutput prediction = GetP(CurrentBallPosition, Q, target, true);
+            PredictionOutput prediction = GetP(_currentBallPosition, Q, target, true);
 
             if (Q.IsReady() && prediction.Hitchance >= GetHitchance(source) && Player.Distance(target) <= Q.Range + Q.Width)
             {
@@ -442,84 +443,54 @@ namespace xSaliceReligionAIO.Champions
             }
         }
 
-        public void CheckWMec()
+        private void CheckWMec()
         {
-            if (!W.IsReady() || IsBallMoving)
+            if (!W.IsReady() || _isBallMoving)
                 return;
 
-            int hit = 0;
             int minHit = menu.Item("autoW").GetValue<Slider>().Value;
 
-            foreach (
-                Obj_AI_Hero enemy in
-                    ObjectManager.Get<Obj_AI_Hero>()
-                        .Where(x => Player.Distance(x) < 1500 && x.IsValidTarget() && x.IsEnemy && !x.IsDead))
-            {
-                if (enemy != null)
-                {
-                    PredictionOutput prediction = GetPCircle(CurrentBallPosition, W, enemy, true);
-
-                    if (W.IsReady() && prediction.UnitPosition.Distance(CurrentBallPosition) < W.Width)
-                    {
-                        hit++;
-                    }
-                }
-            }
+            int hit = (from x in ObjectManager.Get<Obj_AI_Hero>().Where(champ => champ.IsValidTarget(1500) && champ.IsVisible && !champ.IsZombie) 
+                       where x != null select GetPCircle(_currentBallPosition, W, x, true)).Count(prediction => W.IsReady() && prediction.UnitPosition.Distance(_currentBallPosition) < W.Width);
 
             if (hit >= minHit && W.IsReady())
                 W.Cast();
         }
 
-        public void CheckRMec()
+        private void CheckRMec()
         {
-            if (!R.IsReady() || IsBallMoving)
+            if (!R.IsReady() || _isBallMoving)
                 return;
 
-            int hit = 0;
             int minHit = menu.Item("autoRCombo").GetValue<Slider>().Value;
 
-            foreach (
-                Obj_AI_Hero enemy in
-                    ObjectManager.Get<Obj_AI_Hero>()
-                        .Where(x => Player.Distance(x) < 1500 && x.IsValidTarget() && x.IsEnemy && !x.IsDead))
+            int hit = 0;
+            foreach (Obj_AI_Hero champ in from champ in ObjectManager.Get<Obj_AI_Hero>() where champ.IsValidTarget(1500) && champ.IsVisible && !champ.IsZombie where champ != null let prediction = GetPCircle(_currentBallPosition, R, champ, true) where R.IsReady() && prediction.UnitPosition.Distance(_currentBallPosition) <= R.Width select champ)
             {
-                if (enemy != null)
-                {
-                    PredictionOutput prediction = GetPCircle(CurrentBallPosition, R, enemy, true);
-
-                    if (R.IsReady() && prediction.UnitPosition.Distance(CurrentBallPosition) <= R.Width)
-                    {
-                        hit++;
-                    }
-                }
+                if (Player.GetSpellDamage(champ, SpellSlot.R) > champ.Health + 25)
+                    hit += 2;
+                else
+                    hit++;
             }
 
             if (hit >= minHit && R.IsReady())
                 R.Cast();
         }
 
-        public void CheckRMecGlobal()
+        private void CheckRMecGlobal()
         {
-            if (!R.IsReady() || IsBallMoving)
+            if (!R.IsReady() || _isBallMoving)
                 return;
 
-            int hit = 0;
             int minHit = menu.Item("autoR").GetValue<Slider>().Value;
 
-            foreach (
-                Obj_AI_Hero enemy in
-                    ObjectManager.Get<Obj_AI_Hero>()
-                        .Where(x => Player.Distance(x) < 1500 && x.IsValidTarget() && x.IsEnemy && !x.IsDead))
+            int hit = 0;
+            foreach (Obj_AI_Hero champ in from champ in ObjectManager.Get<Obj_AI_Hero>() where champ.IsValidTarget(1500) && champ.IsVisible && !champ.IsZombie where champ != null let prediction = GetPCircle(_currentBallPosition, R, champ, true) where R.IsReady() && prediction.UnitPosition.Distance(_currentBallPosition) <= R.Width select champ)
             {
-                if (enemy != null)
-                {
-                    PredictionOutput prediction = GetPCircle(CurrentBallPosition, R, enemy, true);
-
-                    if (R.IsReady() && prediction.UnitPosition.Distance(CurrentBallPosition) <= R.Width)
-                    {
-                        hit++;
-                    }
-                }
+                if (Player.GetSpellDamage(champ, SpellSlot.R) > champ.Health + 25)
+                    hit += 2;
+                else
+                    hit++;
             }
 
             if (hit >= minHit && R.IsReady())
@@ -531,27 +502,11 @@ namespace xSaliceReligionAIO.Champions
             if (!R.IsReady())
                 return 0;
 
-            int hit = 0;
-            foreach (
-                Obj_AI_Hero enemy in
-                    ObjectManager.Get<Obj_AI_Hero>()
-                        .Where(x => Player.Distance(x) < 1500 && x.IsValidTarget() && x.IsEnemy && !x.IsDead))
-            {
-                if (enemy != null)
-                {
-                    PredictionOutput prediction = GetPCircle(CurrentBallPosition, R, enemy, true);
-
-                    if (R.IsReady() && prediction.UnitPosition.Distance(CurrentBallPosition) <= R.Width)
-                    {
-                        hit++;
-                    }
-                }
-            }
-
-            return hit;
+            return (from enemy in ObjectManager.Get<Obj_AI_Hero>().Where(champ => champ.IsValidTarget(1500) && champ.IsVisible && !champ.IsZombie) 
+                    where enemy != null select GetPCircle(_currentBallPosition, R, enemy, true)).Count(prediction => R.IsReady() && prediction.UnitPosition.Distance(_currentBallPosition) <= R.Width);
         }
 
-        public void LastHit()
+        private void LastHit()
         {
             if (!Orbwalking.CanMove(40)) return;
 
@@ -565,7 +520,7 @@ namespace xSaliceReligionAIO.Champions
                         HealthPrediction.GetHealthPrediction(minion, (int)(Player.Distance(minion) * 1000 / 1400)) <
                         Player.GetSpellDamage(minion, SpellSlot.Q) - 10)
                     {
-                        PredictionOutput prediction = GetP(CurrentBallPosition, Q, minion, true);
+                        PredictionOutput prediction = GetP(_currentBallPosition, Q, minion, true);
 
                         if (prediction.Hitchance >= HitChance.High && Q.IsReady())
                             Q.Cast(prediction.CastPosition, packets());
@@ -587,11 +542,9 @@ namespace xSaliceReligionAIO.Champions
             var useW = menu.Item("UseWFarm").GetValue<bool>();
             int min = menu.Item("qFarm").GetValue<Slider>().Value;
 
-            int hit;
-
             if (useQ && Q.IsReady())
             {
-                Q.From = CurrentBallPosition;
+                Q.From = _currentBallPosition;
 
                 MinionManager.FarmLocation pred = Q.GetCircularFarmLocation(allMinionsQ, Q.Width + 15);
 
@@ -599,25 +552,21 @@ namespace xSaliceReligionAIO.Champions
                     Q.Cast(pred.Position, packets());
             }
 
-            hit = 0;
+            int hit = 0;
             if (useW && W.IsReady())
             {
-                foreach (Obj_AI_Base enemy in allMinionsW)
-                {
-                    if (enemy.Distance(CurrentBallPosition) < W.Range)
-                        hit++;
-                }
+                hit += allMinionsW.Count(enemy => enemy.Distance(_currentBallPosition) < W.Range);
 
                 if (hit >= min && W.IsReady())
                     W.Cast();
             }
         }
 
-        public void Escape()
+        private void Escape()
         {
-            if (BallStatus == 0 && W.IsReady())
+            if (_ballStatus == 0 && W.IsReady())
                 W.Cast();
-            else if (E.IsReady() && BallStatus != 0)
+            else if (E.IsReady() && _ballStatus != 0)
                 E.CastOnUnit(Player, packets());
         }
 
@@ -659,13 +608,13 @@ namespace xSaliceReligionAIO.Champions
             CheckWMec();
         }
 
-        public void OnGainBuff()
+        private void OnGainBuff()
         {
             if (Player.HasBuff("OrianaGhostSelf"))
             {
-                BallStatus = 0;
-                CurrentBallPosition = Player.ServerPosition;
-                IsBallMoving = false;
+                _ballStatus = 0;
+                _currentBallPosition = Player.ServerPosition;
+                _isBallMoving = false;
                 return;
             }
 
@@ -673,14 +622,14 @@ namespace xSaliceReligionAIO.Champions
                 ObjectManager.Get<Obj_AI_Hero>()
                     .Where(ally => ally.IsAlly && !ally.IsDead && ally.HasBuff("orianaghost", true)))
             {
-                BallStatus = 2;
-                CurrentBallPosition = ally.ServerPosition;
-                AllyDraw = ally.Position;
-                IsBallMoving = false;
+                _ballStatus = 2;
+                _currentBallPosition = ally.ServerPosition;
+                _allyDraw = ally.Position;
+                _isBallMoving = false;
                 return;
             }
 
-            BallStatus = 1;
+            _ballStatus = 1;
         }
 
         public override void Drawing_OnDraw(EventArgs args)
@@ -690,12 +639,12 @@ namespace xSaliceReligionAIO.Champions
                 var menuItem = menu.Item(spell.Slot + "Range").GetValue<Circle>();
                 if ((spell.Slot == SpellSlot.R && menuItem.Active) || (spell.Slot == SpellSlot.W && menuItem.Active))
                 {
-                    if (BallStatus == 0)
+                    if (_ballStatus == 0)
                         Utility.DrawCircle(Player.Position, spell.Range, spell.IsReady() ? Color.Aqua : Color.Red);
-                    else if (BallStatus == 2)
-                        Utility.DrawCircle(AllyDraw, spell.Range, spell.IsReady() ? Color.Aqua : Color.Red);
+                    else if (_ballStatus == 2)
+                        Utility.DrawCircle(_allyDraw, spell.Range, spell.IsReady() ? Color.Aqua : Color.Red);
                     else
-                        Utility.DrawCircle(CurrentBallPosition, spell.Range, spell.IsReady() ? Color.Aqua : Color.Red);
+                        Utility.DrawCircle(_currentBallPosition, spell.Range, spell.IsReady() ? Color.Aqua : Color.Red);
                 }
                 else if (menuItem.Active)
                     Utility.DrawCircle(Player.Position, spell.Range, spell.IsReady() ? Color.Aqua : Color.Red);
@@ -736,7 +685,7 @@ namespace xSaliceReligionAIO.Champions
                             {
                                 //Game.PrintChat("shielding");
                                 E.CastOnUnit(ally, packets());
-                                IsBallMoving = true;
+                                _isBallMoving = true;
                                 return;
                             }
                         }
@@ -747,20 +696,11 @@ namespace xSaliceReligionAIO.Champions
             //intiator
             if (unit.IsAlly)
             {
-                foreach (Initiator spell in Initiator.InitatorList)
+                if (Initiator.InitatorList.Where(spell => args.SData.Name == spell.SDataName).Where(spell => menu.Item(spell.SpellName).GetValue<bool>()).Any(spell => E.IsReady() && Player.Distance(unit) < E.Range))
                 {
-                    if (args.SData.Name == spell.SDataName)
-                    {
-                        if (menu.Item(spell.SpellName).GetValue<bool>())
-                        {
-                            if (E.IsReady() && Player.Distance(unit) < E.Range)
-                            {
-                                E.CastOnUnit(unit, packets());
-                                IsBallMoving = true;
-                                return;
-                            }
-                        }
-                    }
+                    E.CastOnUnit(unit, packets());
+                    _isBallMoving = true;
+                    return;
                 }
             }
 
@@ -770,13 +710,13 @@ namespace xSaliceReligionAIO.Champions
 
             if (castedSlot == SpellSlot.Q)
             {
-                IsBallMoving = true;
+                _isBallMoving = true;
                 Utility.DelayAction.Add(
-                    (int)Math.Max(1, 1000 * (args.End.Distance(CurrentBallPosition) - Game.Ping - 0.1) / Q.Speed), () =>
+                    (int)Math.Max(1, 1000 * (args.End.Distance(_currentBallPosition) - Game.Ping - 0.1) / Q.Speed), () =>
                     {
-                        CurrentBallPosition = args.End;
-                        BallStatus = 1;
-                        IsBallMoving = false;
+                        _currentBallPosition = args.End;
+                        _ballStatus = 1;
+                        _isBallMoving = false;
                         //Game.PrintChat("Stopped");
                     });
             }
