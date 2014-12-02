@@ -208,9 +208,9 @@ namespace xSaliceReligionAIO.Champions
         private void CastMecR(bool forceUlt)
         {
             //check if only one target
-            if (countEnemiesNearPosition(Player.ServerPosition, R.Range) < 2)
+            if (countEnemiesNearPosition(Player.ServerPosition, R.Range) < 2 && forceUlt)
             {
-                //CastSingleR();
+                CastSingleR();
                 return;
             }
 
