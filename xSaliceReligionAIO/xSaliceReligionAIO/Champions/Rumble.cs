@@ -283,10 +283,11 @@ namespace xSaliceReligionAIO.Champions
             if (Player.IsDead)
                 return;
 
-            CastMecR(false);
+            
 
             if (menu.Item("ComboActive").GetValue<KeyBind>().Active)
             {
+                CastMecR(false);
                 Combo();
             }
             else
